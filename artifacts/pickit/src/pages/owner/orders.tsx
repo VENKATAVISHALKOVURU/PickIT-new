@@ -10,6 +10,9 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { FileText, Printer, CheckCircle2, Copy } from "lucide-react";
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function OwnerOrders() {
   const queryClient = useQueryClient();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -125,7 +128,7 @@ export default function OwnerOrders() {
                           
                           <div className="flex flex-col sm:items-end justify-between gap-4 border-t sm:border-t-0 sm:border-l pt-4 sm:pt-0 sm:pl-6">
                             <div className="text-xl font-bold text-primary">
-                              ${order.price.toFixed(2)}
+                              {formatINR(order.price)}
                             </div>
                             
                             <Button 
@@ -172,7 +175,7 @@ export default function OwnerOrders() {
                         </div>
                       </div>
                       <div className="font-medium text-primary">
-                        ${order.price.toFixed(2)}
+                        {formatINR(order.price)}
                       </div>
                     </div>
                   </Card>

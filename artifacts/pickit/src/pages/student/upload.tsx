@@ -1,19 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useGetMe, useGetShopByCode, getGetShopByCodeQueryKey, useGetMyShopPricing, getGetMyShopPricingQueryKey, useCreateOrder, CreateOrderBodyColorMode } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useGetMe, useGetMyShopPricing, useCreateOrder, CreateOrderBodyColorMode } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { FileUp, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, FileText, ShieldCheck, Printer, Clock3, IndianRupee, Sparkles, CircleCheckBig, Users } from "lucide-react";
 
 const uploadSchema = z.object({
   fileUrl: z.string().url("Must be a valid URL for the file to print"),
@@ -24,24 +23,21 @@ const uploadSchema = z.object({
   note: z.string().optional(),
 });
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function StudentUpload() {
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const [estimatedPrice, setEstimatedPrice] = useState(0);
+  const [step, setStep] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
   const { data: user, isLoading: isUserLoading } = useGetMe();
-  
-  // We need to fetch the shop info to get pricing since the student doesn't have a myShop
-  // For the actual app we might need an endpoint to get the shop they joined, but for now
-  // let's assume we can fetch pricing if they are linked. The API spec says useGetMyShopPricing
-  // gets current shop pricing config. Wait, the student is linked via shopId.
-  // Actually, useGetMyShopPricing gets the pricing for the current user's shop (if owner) 
-  // OR the shop they are linked to (if student). Let's use it.
-  
+
   const { data: pricing, isLoading: isPricingLoading } = useGetMyShopPricing({
     query: {
-      queryKey: getGetMyShopPricingQueryKey(),
-      enabled: !!user?.shopId
+      queryKey: ["student-shop-pricing", user?.shopId],
+      enabled: !!user?.shopId,
     }
   });
 
@@ -60,22 +56,24 @@ export default function StudentUpload() {
   const watchPages = form.watch("pages");
   const watchColorMode = form.watch("colorMode");
   const watchCopies = form.watch("copies");
+  const watchedFileName = form.watch("fileName");
+  const watchedFileUrl = form.watch("fileUrl");
 
-  useEffect(() => {
-    if (pricing) {
-      const perPagePrice = watchColorMode === "bw" ? pricing.bwPerPage : pricing.colorPerPage;
-      let total = perPagePrice * (watchPages || 1) * (watchCopies || 1);
-      if (total < pricing.minimumOrder) {
-        total = pricing.minimumOrder;
-      }
-      setEstimatedPrice(total);
-    }
+  const estimated = useMemo(() => {
+    const perPagePrice = watchColorMode === "bw" ? pricing?.bwPerPage ?? 2 : pricing?.colorPerPage ?? 5;
+    const pageCount = Math.max(1, Number(watchPages) || 1);
+    const copies = Math.max(1, Number(watchCopies) || 1);
+    const subtotal = perPagePrice * pageCount * copies;
+    const total = Math.max(subtotal, pricing?.minimumOrder ?? 10);
+    const timeMinutes = Math.max(5, Math.round((pageCount * copies) / 2) + (watchColorMode === "color" ? 3 : 0));
+    return { perPagePrice, pageCount, copies, subtotal, total, timeMinutes };
   }, [pricing, watchPages, watchColorMode, watchCopies]);
 
   const createMutation = useCreateOrder({
     mutation: {
       onSuccess: () => {
-        toast.success("Order submitted successfully!");
+        setCompleted(true);
+        toast.success("Order placed successfully!");
         setLocation("/student/orders");
       },
       onError: (err) => {
@@ -99,6 +97,15 @@ export default function StudentUpload() {
     });
   }
 
+  const fileUrlValue = watchedFileUrl?.trim();
+
+  const handleDrop = (accepted: string) => {
+    form.setValue("fileUrl", accepted, { shouldDirty: true, shouldValidate: true });
+    form.setValue("fileName", accepted.split("/").pop() || "print-job.pdf", { shouldDirty: true, shouldValidate: true });
+    setStep(1);
+    toast.success("File added");
+  };
+
   if (isUserLoading || isPricingLoading) {
     return (
       <div className="space-y-6">
@@ -114,7 +121,7 @@ export default function StudentUpload() {
   if (!user?.shopId) {
     return (
       <div className="space-y-6 flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <Info className="w-16 h-16 text-muted-foreground mb-4" />
+        <Users className="w-16 h-16 text-muted-foreground mb-4" />
         <h1 className="text-3xl font-bold tracking-tight">No Shop Linked</h1>
         <p className="text-muted-foreground max-w-md">
           You haven't joined a print shop yet. Please scan a shop's QR code or visit their link to connect to them.
@@ -126,154 +133,182 @@ export default function StudentUpload() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight text-primary">Upload Print Job</h1>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Card className="max-w-2xl border-primary/10 shadow-md">
-          <CardHeader>
-            <CardTitle>Order Details</CardTitle>
-            <CardDescription>Fill out the form below to send your file to the printer.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                
-                <div className="grid gap-6 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="fileUrl"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>File URL (Google Drive, Dropbox, etc)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="fileName"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>File Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Essay_Final.pdf" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
+      <div className="flex flex-wrap gap-2">
+        {["Upload File", "Paper Configuration", "Processing", "Queue", "PickIT✓"].map((label, index) => (
+          <div key={label} className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${step >= index ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground"}`}>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background border text-xs font-semibold">{index + 1}</span>
+            {label}
+          </div>
+        ))}
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <Card className="border-primary/10 shadow-lg">
+            <CardHeader>
+              <CardTitle>Student flow</CardTitle>
+              <CardDescription>Choose a shop, upload your file, then configure print options.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-4">
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                      onDragLeave={() => setDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setDragging(false);
+                        const dropped = e.dataTransfer.getData("text/plain") || "sample-document.pdf";
+                        handleDrop(dropped);
+                      }}
+                      className={`rounded-2xl border border-dashed p-6 transition-all ${dragging ? "border-primary bg-primary/5" : "border-border bg-muted/20"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-primary/10 p-3 text-primary"><Upload className="h-5 w-5" /></div>
+                        <div>
+                          <p className="font-semibold">Drag and drop your file</p>
+                          <p className="text-sm text-muted-foreground">PDFs and images only</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <FormField control={form.control} name="fileUrl" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>File URL</FormLabel>
+                            <FormControl><Input placeholder="https://drive.google.com/..." {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="fileName" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>File name</FormLabel>
+                            <FormControl><Input placeholder="assignment.pdf" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      <AnimatePresence>
+                        {(watchedFileName || fileUrlValue) && (
+                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4 rounded-xl border bg-background p-4">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-5 w-5 text-primary" />
+                              <div>
+                                <p className="font-medium">{watchedFileName || "Selected file"}</p>
+                                <p className="text-sm text-muted-foreground">Preview ready · 2.4 MB</p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="pages"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Pages</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="1" {...field} />
-                        </FormControl>
+                        <FormLabel>Page count</FormLabel>
+                        <FormControl><Input type="number" min="1" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
-                    control={form.control}
-                    name="copies"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Number of Copies</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="colorMode"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Color Mode</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-row space-x-4"
-                          >
-                            <FormItem className="flex items-center space-x-2 space-y-0 bg-muted/30 border rounded-md p-3 flex-1 cursor-pointer data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                              <FormControl>
-                                <RadioGroupItem value="bw" />
-                              </FormControl>
-                              <FormLabel className="cursor-pointer w-full font-normal">
-                                Black & White (${pricing?.bwPerPage}/pg)
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-2 space-y-0 bg-muted/30 border rounded-md p-3 flex-1 cursor-pointer data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                              <FormControl>
-                                <RadioGroupItem value="color" />
-                              </FormControl>
-                              <FormLabel className="cursor-pointer w-full font-normal">
-                                Color (${pricing?.colorPerPage}/pg)
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="note"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Special Instructions (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Double sided, staple top left..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-primary">Estimated Total</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {pricing?.minimumOrder && estimatedPrice === pricing.minimumOrder 
-                        ? `(Minimum order applied: $${pricing.minimumOrder})` 
-                        : "Based on pages and copies"}
-                    </p>
+                  <FormField control={form.control} name="copies" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Copies</FormLabel>
+                      <FormControl><Input type="number" min="1" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="colorMode" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Print type</FormLabel>
+                      <FormControl>
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-3">
+                          {["bw", "color"].map((value) => (
+                            <label key={value} className="flex items-center gap-3 rounded-xl border p-4 hover:border-primary cursor-pointer">
+                              <RadioGroupItem value={value} />
+                              <span>{value === "bw" ? "B/W" : "Color"}</span>
+                            </label>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="note" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instructions</FormLabel>
+                      <FormControl><Input placeholder="Double sided, staple top left..." {...field} /></FormControl>
+                    </FormItem>
+                  )} />
+                  <div className="flex items-center gap-3 rounded-2xl border bg-muted/20 p-4">
+                    <Clock3 className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium">Estimated time: {estimated.timeMinutes}–{estimated.timeMinutes + 5} minutes</p>
+                      <p className="text-sm text-muted-foreground">Queue load and page count affect timing.</p>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-primary">
-                    ${estimatedPrice.toFixed(2)}
+                  <div className="rounded-2xl border bg-primary/5 p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Live pricing</p>
+                      <p className="text-lg font-semibold">₹{estimated.perPagePrice} × {estimated.pageCount} pages × {estimated.copies} copies</p>
+                      <p className="text-sm text-muted-foreground">Minimum order: {formatINR(pricing?.minimumOrder ?? 10)}</p>
+                    </div>
+                    <div className="text-3xl font-bold text-primary">{formatINR(estimated.total)}</div>
                   </div>
-                </div>
+                  <div className="flex gap-3">
+                    <Button type="button" variant="outline" className="flex-1" onClick={() => setStep((s) => Math.min(s + 1, 4))}>Next</Button>
+                    <Button type="submit" className="flex-1 gap-2" disabled={createMutation.isPending}>
+                      <Sparkles className="h-4 w-4" />
+                      {createMutation.isPending ? "Sending..." : "Place Order"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
 
-                <Button 
-                  type="submit" 
-                  disabled={createMutation.isPending}
-                  className="w-full gap-2 h-12 text-lg"
-                >
-                  <FileUp className="w-5 h-5" />
-                  {createMutation.isPending ? "Submitting..." : "Submit Order"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+          <Card className="border-primary/10 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Connected shop</CardTitle>
+              <CardDescription>Your order is routed to this shop automatically.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-2xl border bg-background p-4">
+                <p className="text-sm text-muted-foreground">Shop linked</p>
+                <p className="text-xl font-semibold">Connected to your print shop</p>
+              </div>
+              <div className="rounded-2xl border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground">Status tracker</p>
+                <div className="mt-3 space-y-3">
+                  {["Pending", "Accepted", "Printing", "Completed"].map((label, index) => (
+                    <div key={label} className="flex items-center gap-3">
+                      <div className={`h-3 w-3 rounded-full ${step >= index ? "bg-primary" : "bg-muted-foreground/30"}`} />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{label}</span>
+                          {index === 0 && <span className="text-xs text-muted-foreground">queue</span>}
+                        </div>
+                        <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
+                          <motion.div className="h-full bg-primary" initial={{ width: "0%" }} animate={{ width: step >= index ? "100%" : "0%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <AnimatePresence>
+                {completed && (
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-green-700">
+                    <CircleCheckBig className="mb-2 h-6 w-6" />
+                    Your print request has been sent to the shop.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </div>
       </motion.div>
     </div>
   );

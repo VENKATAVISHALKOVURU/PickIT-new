@@ -4,6 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { ShoppingCart, Clock, DollarSign, Users, TrendingUp } from "lucide-react";
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function OwnerOverview() {
   const { data: analytics, isLoading } = useGetAnalyticsOverview({
     query: {
@@ -36,7 +39,7 @@ export default function OwnerOverview() {
   const stats = [
     {
       title: "Today's Revenue",
-      value: `$${(analytics?.todayRevenue || 0).toFixed(2)}`,
+      value: formatINR(analytics?.todayRevenue || 0),
       icon: DollarSign,
       description: "Revenue from today's orders"
     },
@@ -60,7 +63,7 @@ export default function OwnerOverview() {
     },
     {
       title: "Total Revenue",
-      value: `$${(analytics?.totalRevenue || 0).toFixed(2)}`,
+      value: formatINR(analytics?.totalRevenue || 0),
       icon: TrendingUp,
       description: "All time revenue"
     }

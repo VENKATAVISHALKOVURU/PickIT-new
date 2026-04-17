@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { FileText, Clock, Printer, CheckCircle2 } from "lucide-react";
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function StudentOrders() {
   const { data: orders, isLoading } = useGetStudentOrders({
     query: {
@@ -102,7 +105,7 @@ export default function StudentOrders() {
                       
                       <div className="flex flex-col md:items-end justify-center gap-4 bg-muted/20 md:bg-transparent p-4 md:p-0 rounded-lg md:min-w-[200px]">
                         <div className="text-2xl font-bold text-primary text-left md:text-right">
-                          ${order.price.toFixed(2)}
+                          {formatINR(order.price)}
                         </div>
                         
                         <div className={`flex items-center gap-3 p-3 rounded-xl border ${getStatusColor(order.status)}`}>

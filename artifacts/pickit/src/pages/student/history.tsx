@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { FileText, CheckCircle2 } from "lucide-react";
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function StudentHistory() {
   const { data: orders, isLoading } = useGetStudentOrders({
     query: {
@@ -66,7 +69,7 @@ export default function StudentHistory() {
                         {order.pages} pgs • {order.colorMode.toUpperCase()}
                       </div>
                       <div className="font-bold text-lg">
-                        ${order.price.toFixed(2)}
+                        {formatINR(order.price)}
                       </div>
                     </div>
                   </CardContent>

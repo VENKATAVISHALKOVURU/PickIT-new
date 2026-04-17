@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { format, parseISO } from "date-fns";
 
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
 export default function OwnerAnalytics() {
   const { data: ordersByDay, isLoading: isLoadingOrders } = useGetOrdersByDay({
     query: { queryKey: getGetOrdersByDayQueryKey() }
@@ -119,11 +122,11 @@ export default function OwnerAnalytics() {
                       axisLine={false} 
                       tickLine={false}
                       tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                      tickFormatter={(value) => `$${value}`}
+                      tickFormatter={(value) => formatINR(Number(value))}
                     />
                     <RechartsTooltip 
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                      formatter={(value: number) => [`$${value.toFixed(2)}`, 'Revenue']}
+                      formatter={(value: number) => [formatINR(value), 'Revenue']}
                     />
                     <Line 
                       type="monotone" 
