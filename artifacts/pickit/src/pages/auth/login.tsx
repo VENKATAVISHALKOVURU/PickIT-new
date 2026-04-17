@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -60,9 +61,10 @@ export default function Login() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <Card className="border-primary/10 shadow-lg">
+        <Card className="border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.2)]">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold tracking-tight text-primary">Welcome back</CardTitle>
+            <img src={brandLogo} alt="PickIT" className="mx-auto h-12 w-auto object-contain mb-2" />
+            <CardTitle className="text-3xl font-bold tracking-tight text-white">Welcome back</CardTitle>
             <CardDescription>
               Enter your email and password to access your account
             </CardDescription>

@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -87,9 +88,10 @@ export default function Register() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <Card className="border-primary/10 shadow-lg">
+        <Card className="border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.2)]">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold tracking-tight text-primary">Create an account</CardTitle>
+            <img src={brandLogo} alt="PickIT" className="mx-auto h-12 w-auto object-contain mb-2" />
+            <CardTitle className="text-3xl font-bold tracking-tight text-white">Create an account</CardTitle>
             <CardDescription>
               Join PickIT to start printing or managing your shop
             </CardDescription>

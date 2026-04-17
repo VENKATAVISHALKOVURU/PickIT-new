@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { ReactNode } from "react";
 import { LayoutDashboard, ShoppingCart, QrCode, Settings, FileUp, History, LogOut, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
 export function PrivateRoute({ children, role }: { children: ReactNode; role?: "student" | "owner" }) {
   const { user, isLoading } = useAuth();
@@ -61,7 +62,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex h-screen bg-background">
       <aside className="w-64 border-r border-border bg-card flex flex-col hidden md:flex">
         <div className="p-6 border-b border-border">
-          <h2 className="text-2xl font-bold text-primary tracking-tight">PickIT</h2>
+          <img src={brandLogo} alt="PickIT" className="h-10 w-auto object-contain" />
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {links.map((link) => {
