@@ -88,10 +88,10 @@ export default function Register() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <Card className="border-white/10 bg-white/8 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.2)]">
+        <Card className="border-primary/10 shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <img src={brandLogo} alt="PickIT" className="mx-auto h-12 w-auto object-contain mb-2" />
-            <CardTitle className="text-3xl font-bold tracking-tight text-white">Create an account</CardTitle>
+            <CardTitle className="text-3xl font-bold tracking-tight text-primary">Create an account</CardTitle>
             <CardDescription>
               Join PickIT to start printing or managing your shop
             </CardDescription>
