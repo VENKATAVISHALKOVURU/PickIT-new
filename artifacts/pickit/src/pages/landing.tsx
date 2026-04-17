@@ -1,7 +1,7 @@
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Printer, Zap, LayoutDashboard, ArrowRight } from "lucide-react";
+import { Printer, Zap, LayoutDashboard, ArrowRight, ScanLine } from "lucide-react";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
@@ -20,7 +20,9 @@ export default function Landing() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Printer className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold tracking-tight">PickIT</span>
+            <span className="text-xl font-bold tracking-tight">
+              PickIT <span className="text-xs font-medium text-muted-foreground">s</span>
+            </span>
           </div>
           <div className="flex gap-4">
             <Button variant="ghost" asChild>
@@ -41,12 +43,13 @@ export default function Landing() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4 border border-primary/20">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-              The modern way to print on campus
+              Ready. Retrieve. Print.
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground">
-              Print smarter. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Not harder.</span>
+              PickIt <span className="text-2xl align-top text-muted-foreground">s</span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Ready. Retrieve.</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -59,6 +62,12 @@ export default function Landing() {
                 <Link href="/auth/register?role=student">
                   I'm a Student
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto h-14 px-8 text-lg group" asChild>
+                <Link href="/join/SCAN">
+                  <ScanLine className="mr-2 w-5 h-5" />
+                  Scan & Join
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg" asChild>

@@ -1,25 +1,34 @@
 import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { ReactNode } from "react";
-import { LayoutDashboard, ShoppingCart, QrCode, Settings, FileUp, History, LogOut } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, QrCode, Settings, FileUp, History, LogOut, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function PrivateRoute({ children, role }: { children: ReactNode; role?: "student" | "owner" }) {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user) {
+      setLocation("/auth/login");
+      return;
+    }
+    if (role && user.role !== role) {
+      setLocation(user.role === "student" ? "/student/upload" : "/owner/overview");
+    }
+  }, [isLoading, user, role, setLocation]);
+
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
-    setLocation("/auth/login");
     return null;
   }
 
   if (role && user.role !== role) {
-    if (user.role === "student") setLocation("/student/upload");
-    if (user.role === "owner") setLocation("/owner/overview");
     return null;
   }
 
@@ -41,6 +50,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const studentLinks = [
     { href: "/student/upload", label: "Upload Print", icon: FileUp },
+    { href: "/join/SCAN", label: "Scan & Join", icon: ScanLine },
     { href: "/student/orders", label: "Active Orders", icon: ShoppingCart },
     { href: "/student/history", label: "History", icon: History },
   ];
