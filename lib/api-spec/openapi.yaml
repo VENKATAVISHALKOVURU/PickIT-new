@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: PickIT print request platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: shop
+    description: Shop operations
+  - name: orders
+    description: Order operations
+  - name: analytics
+    description: Analytics operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,317 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid input or email already taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /shop/my:
+    get:
+      operationId: getMyShop
+      tags: [shop]
+      summary: Get current owner's shop info including QR code details
+      responses:
+        "200":
+          description: Shop info with shopCode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+        "404":
+          description: No shop found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /shop/my/pricing:
+    get:
+      operationId: getMyShopPricing
+      tags: [shop]
+      summary: Get current shop pricing config
+      responses:
+        "200":
+          description: Pricing config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingConfig"
+    put:
+      operationId: updateMyShopPricing
+      tags: [shop]
+      summary: Update shop pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePricingBody"
+      responses:
+        "200":
+          description: Updated pricing config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingConfig"
+
+  /shop/my/settings:
+    put:
+      operationId: updateMyShopSettings
+      tags: [shop]
+      summary: Update shop settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateShopSettingsBody"
+      responses:
+        "200":
+          description: Updated shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+
+  /shop/join/{shopCode}:
+    post:
+      operationId: joinShop
+      tags: [shop]
+      summary: Student links to a shop via QR code
+      parameters:
+        - name: shopCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully linked to shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+        "404":
+          description: Shop not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /shop/info/{shopCode}:
+    get:
+      operationId: getShopByCode
+      tags: [shop]
+      summary: Get shop info by shop code (public, for QR landing)
+      parameters:
+        - name: shopCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shop info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+        "404":
+          description: Shop not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a new print order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderBody"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/student:
+    get:
+      operationId: getStudentOrders
+      tags: [orders]
+      summary: Get student's orders
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/shop:
+    get:
+      operationId: getShopOrders
+      tags: [orders]
+      summary: Get shop owner's incoming orders
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/{id}/status:
+    patch:
+      operationId: updateOrderStatus
+      tags: [orders]
+      summary: Update order status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusBody"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      summary: Get shop analytics overview (stats, revenue, order counts)
+      responses:
+        "200":
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsOverview"
+
+  /analytics/orders-by-day:
+    get:
+      operationId: getOrdersByDay
+      tags: [analytics]
+      summary: Get orders count per day for last 7 days
+      responses:
+        "200":
+          description: Orders by day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrdersByDayItem"
+
+  /analytics/revenue-trend:
+    get:
+      operationId: getRevenueTrend
+      tags: [analytics]
+      summary: Get revenue trend for last 7 days
+      responses:
+        "200":
+          description: Revenue trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueTrendItem"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +352,265 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [student, owner]
+        shopName:
+          type: string
+        shopAddress:
+          type: string
+      required:
+        - name
+        - email
+        - password
+        - role
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [student, owner]
+        shopId:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - name
+        - email
+        - role
+
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+        ownerId:
+          type: integer
+        name:
+          type: string
+        shopCode:
+          type: string
+        address:
+          type: string
+          nullable: true
+        isOpen:
+          type: boolean
+      required:
+        - id
+        - ownerId
+        - name
+        - shopCode
+        - isOpen
+
+    PricingConfig:
+      type: object
+      properties:
+        id:
+          type: integer
+        shopId:
+          type: integer
+        bwPerPage:
+          type: number
+        colorPerPage:
+          type: number
+        minimumOrder:
+          type: number
+      required:
+        - id
+        - shopId
+        - bwPerPage
+        - colorPerPage
+        - minimumOrder
+
+    UpdatePricingBody:
+      type: object
+      properties:
+        bwPerPage:
+          type: number
+        colorPerPage:
+          type: number
+        minimumOrder:
+          type: number
+      required:
+        - bwPerPage
+        - colorPerPage
+        - minimumOrder
+
+    UpdateShopSettingsBody:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        isOpen:
+          type: boolean
+
+    CreateOrderBody:
+      type: object
+      properties:
+        shopId:
+          type: integer
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        pages:
+          type: integer
+        colorMode:
+          type: string
+          enum: [bw, color]
+        copies:
+          type: integer
+        note:
+          type: string
+      required:
+        - shopId
+        - fileUrl
+        - fileName
+        - pages
+        - colorMode
+        - copies
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        shopId:
+          type: integer
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        pages:
+          type: integer
+        colorMode:
+          type: string
+          enum: [bw, color]
+        copies:
+          type: integer
+        status:
+          type: string
+          enum: [pending, printing, ready, done]
+        price:
+          type: number
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        studentName:
+          type: string
+          nullable: true
+      required:
+        - id
+        - studentId
+        - shopId
+        - fileUrl
+        - fileName
+        - pages
+        - colorMode
+        - copies
+        - status
+        - price
+        - createdAt
+
+    UpdateOrderStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, printing, ready, done]
+      required:
+        - status
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        totalOrders:
+          type: integer
+        pendingOrders:
+          type: integer
+        todayRevenue:
+          type: number
+        totalRevenue:
+          type: number
+        activeStudents:
+          type: integer
+      required:
+        - totalOrders
+        - pendingOrders
+        - todayRevenue
+        - totalRevenue
+        - activeStudents
+
+    OrdersByDayItem:
+      type: object
+      properties:
+        date:
+          type: string
+        count:
+          type: integer
+      required:
+        - date
+        - count
+
+    RevenueTrendItem:
+      type: object
+      properties:
+        date:
+          type: string
+        revenue:
+          type: number
+      required:
+        - date
+        - revenue

@@ -1,0 +1,247 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .wrap { padding: 1.5rem 0; }
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; }
+  .logo { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #7F77DD, #D4537E); display: flex; align-items: center; justify-content: center; color: white; font-weight: 500; font-size: 18px; flex-shrink: 0; }
+  .title-block h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .title-block p { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .tab { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); font-size: 13px; cursor: pointer; color: var(--color-text-secondary); background: transparent; transition: all 0.15s; }
+  .tab.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .prompt-box { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; font-size: 13px; line-height: 1.75; color: var(--color-text-primary); white-space: pre-wrap; font-family: var(--font-mono); position: relative; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); font-size: 12px; cursor: pointer; color: var(--color-text-secondary); }
+  .copy-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+  .badge-purple { background: #EEEDFE; color: #3C3489; }
+  .badge-teal { background: #E1F5EE; color: #0F6E56; }
+  .badge-coral { background: #FAECE7; color: #993C1D; }
+  .step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--color-background-secondary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; color: var(--color-text-secondary); }
+  .step-content { font-size: 13px; color: var(--color-text-primary); line-height: 1.6; }
+  .step-content strong { font-weight: 500; }
+  .qr-flow { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .qr-flow h3 { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px; }
+  .flow-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .flow-node { padding: 5px 12px; border-radius: 6px; font-size: 12px; background: var(--color-background-secondary); color: var(--color-text-primary); border: 0.5px solid var(--color-border-tertiary); }
+  .flow-arrow { font-size: 14px; color: var(--color-text-tertiary); }
+  .copied { color: #0F6E56 !important; }
+</style>
+
+<div class="wrap">
+  <h2 class="sr-only">PickIT Replit build prompt — copy and paste into Replit AI</h2>
+
+  <div class="header">
+    <div class="logo">P</div>
+    <div class="title-block">
+      <h1>PickIT — Replit Build Prompt</h1>
+      <p>Copy the prompt below into Replit AI Agent to scaffold your full app</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('main')">Main prompt</button>
+    <button class="tab" onclick="show('qr')">QR flow spec</button>
+    <button class="tab" onclick="show('motion')">Motion spec</button>
+    <button class="tab" onclick="show('steps')">Build steps</button>
+  </div>
+
+  <div id="main" class="section active">
+    <div class="prompt-box" id="main-prompt">
+<button class="copy-btn" onclick="copyText('main-prompt', this)">Copy</button>
+Build a full-stack SaaS web app called PickIT — a print request platform for students and shop owners.
+
+=== TECH STACK ===
+Frontend: React + Tailwind CSS + Framer Motion
+Backend: Node.js + Express
+Database: PostgreSQL (use Prisma ORM)
+File storage: Firebase Storage or local multer for MVP
+Auth: JWT-based (bcrypt passwords)
+QR: Use qrcode.react (frontend) + uuid (backend)
+
+=== PREMIUM UI REQUIREMENTS ===
+- Use Framer Motion for ALL page transitions (fade+slide in)
+- Animate every card mount with staggered entrance (0.08s delay each)
+- Use spring physics on hover (scale 1.02, shadow lift)
+- Loading states: animated skeleton shimmer (CSS keyframes)
+- Status badges animate in with a pop (scale 0 → 1.05 → 1)
+- Dashboard stats count up from 0 on load (number counter animation)
+- Use a smooth morphing gradient background ONLY on landing/auth pages
+- All buttons have micro-press animation (scale 0.97 on click)
+- Toast notifications slide in from top-right with progress bar
+- File upload: drag-drop zone with ripple on drop
+- Use Inter font, clean white cards, subtle 1px borders
+
+=== USER ROLES ===
+1. Shop Owner
+2. Student
+
+=== AUTH FLOW ===
+- Landing page with animated hero
+- Register as Student or Shop Owner
+- After shop owner registers → auto-generate a unique UUID shop code
+- Generate a QR code from that UUID and display it on their dashboard
+- Students scan QR → redirected to /join/{shopCode} → pre-fills shop selection
+- Student links their account to that shop via QR scan
+
+=== SHOP OWNER DASHBOARD ===
+Pages: Overview, Orders, QR Code, Pricing, Analytics, Settings
+- Overview: animated stat cards (total orders, pending, revenue today)
+- Orders: real-time list with status chips (Pending / Printing / Ready / Done)
+- QR Code page: show large QR code, shop name, download as PNG button, copy link button
+- Pricing: set per-page prices (B&W, Color), minimum order, paper sizes
+- Analytics: recharts bar chart (orders/day last 7 days), line chart (revenue trend)
+- Settings: shop name, address, open/close toggle
+
+=== STUDENT DASHBOARD ===
+Pages: Upload, My Orders, History
+- Upload: drag-drop file (PDF/image), choose pages, color mode, copies, add note
+- Show estimated price from shop pricing config
+- My Orders: card list with status timeline animation
+- History: past orders
+
+=== QR CONNECT FLOW (CRITICAL) ===
+- Shop owner creates account → backend generates shopCode (UUID)
+- Backend generates and stores shopCode in DB under shop profile
+- On owner dashboard QR page: render <QRCodeCanvas value={"https://pickit.app/join/" + shopCode} />
+- Student scans QR → opens /join/:shopCode in browser
+- If student not logged in → redirect to login/signup then back
+- After auth → link student to that shop → store shopId on student profile
+- Student's upload page now defaults to that shop
+
+=== DATABASE SCHEMA ===
+Tables: users, shops, orders, files, pricing_config
+- users: id, name, email, password, role (student|owner), shopId (nullable)
+- shops: id, ownerId, name, shopCode (UUID), address, isOpen
+- orders: id, studentId, shopId, fileUrl, pages, colorMode, copies, status, price, createdAt
+- pricing_config: id, shopId, bwPerPage, colorPerPage, updatedAt
+
+=== API ROUTES ===
+POST /auth/register
+POST /auth/login
+GET  /shop/qr-info (owner gets their QR + shopCode)
+POST /shop/join/:shopCode (student links to shop)
+POST /orders/create
+GET  /orders/student (student's orders)
+GET  /orders/shop (owner's incoming orders)
+PATCH /orders/:id/status
+GET  /analytics/orders (owner)
+
+=== LANDING PAGE ===
+- Animated hero: "Print smarter. Not harder." with typewriter sub-headline
+- 3 feature cards floating in on scroll
+- Split CTA: "I'm a Student" and "I own a shop" buttons
+- Smooth gradient background (purple → blue → teal, slow animated shift)
+- Footer with logo
+
+=== FOLDER STRUCTURE ===
+/client (React app)
+  /src/pages/auth, /dashboard/student, /dashboard/owner
+  /src/components/ui, /layout, /charts
+  /src/hooks, /contexts, /animations
+/server
+  /routes, /controllers, /middleware, /prisma
+
+=== START WITH ===
+1. Set up project structure
+2. Prisma schema + DB
+3. Auth routes
+4. Shop QR generation
+5. Student QR join flow
+6. Order creation + status
+7. All dashboard pages with animations
+8. Landing page last
+
+Make it production-quality. Every screen must look premium and polished.
+    </div>
+  </div>
+
+  <div id="qr" class="section">
+    <div class="qr-flow">
+      <h3>Owner side</h3>
+      <div class="flow-row">
+        <div class="flow-node">Register</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">UUID generated</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">QR rendered on dashboard</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Print / share QR</div>
+      </div>
+    </div>
+    <div class="qr-flow">
+      <h3>Student side</h3>
+      <div class="flow-row">
+        <div class="flow-node">Scan QR</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">/join/:shopCode</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Login / signup</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">shopId saved to profile</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Upload orders to that shop</div>
+      </div>
+    </div>
+    <div class="qr-flow">
+      <h3>Order routing</h3>
+      <div class="flow-row">
+        <div class="flow-node">Student uploads file</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Order created with shopId</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Owner sees it instantly</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Status: Pending → Printing → Ready → Done</div>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: var(--color-text-secondary); margin-top: 8px;">The QR code is the bridge. One scan = student permanently linked to that shop until they switch.</p>
+  </div>
+
+  <div id="motion" class="section">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Page transitions:</strong> Framer Motion AnimatePresence — every route fades + slides up 20px on enter, fades + slides down on exit. Duration 0.25s ease-out.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><strong>Card stagger:</strong> Dashboard cards animate in with staggerChildren 0.08s. Each card: opacity 0→1, y 16→0, spring physics (stiffness 200, damping 20).</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><strong>Stat counters:</strong> On dashboard load, all numeric stats count up from 0 to final value over 1.2s using a custom useCountUp hook with easeOut curve.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><strong>Status badges:</strong> When status changes, badge scales 0 → 1.08 → 1 with spring and color crossfades. Use Framer layout animations.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-content"><strong>File drop zone:</strong> On hover: border pulses (dashed → solid, purple accent). On drop: ripple expands from drop point (CSS radial keyframe). Show animated checkmark SVG on success.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-content"><strong>Landing gradient:</strong> CSS @keyframes cycles hue-rotate on a conic-gradient. Slow 12s loop. Applied only to /landing and /auth pages — NOT inside dashboards.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-content"><strong>QR reveal:</strong> On QR page, the QR code scales in from 0.6 with a soft spring bounce. Surrounded by a pulsing ring animation (opacity 0.3 → 0, scale 1 → 1.4, 2s loop).</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-content"><strong>Toast notifications:</strong> Slide from top-right (x: 120 → 0), auto-dismiss with shrinking progress bar underneath. Error toasts shake (x: -4 → 4 → 0, 3 cycles).</div></div>
+    <div class="step"><div class="step-num">9</div><div class="step-content"><strong>Skeleton loaders:</strong> Pure CSS shimmer (background-position keyframe on a linear-gradient). Use for every list + card while data fetches.</div></div>
+    <div class="step"><div class="step-num">10</div><div class="step-content"><strong>Order timeline:</strong> Status steps animate in one by one (stagger 0.15s) with a connecting line that draws itself (scaleY 0→1 from top).</div></div>
+  </div>
+
+  <div id="steps" class="section">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Open Replit</strong> → New Repl → choose "Node.js" template</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><strong>Click "AI Agent"</strong> in the left sidebar (or press Cmd+I)</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><strong>Paste the "Main prompt"</strong> from the first tab exactly as-is</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><strong>Let it scaffold</strong> — approve file writes, it will create /client and /server folders</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-content"><strong>Set secrets</strong> in Replit's Secrets tab: DATABASE_URL, JWT_SECRET, FIREBASE_CONFIG (if using Firebase storage)</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-content"><strong>Run migrations:</strong> ask AI Agent "run prisma migrate dev --name init" in the /server folder</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-content"><strong>Test QR flow:</strong> register as owner → go to QR page → copy URL → open in new tab as a student</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-content"><strong>If anything breaks,</strong> paste the error back to Replit AI Agent — it will self-fix</div></div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function copyText(id, btn) {
+    const el = document.getElementById(id);
+    const text = el.innerText.replace('Copy', '').replace('Copied!', '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
