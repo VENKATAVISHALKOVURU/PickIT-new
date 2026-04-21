@@ -1,120 +1,89 @@
-import { useLocation, Link } from "wouter";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Printer, Zap, LayoutDashboard, ArrowRight, ScanLine } from "lucide-react";
+import { GraduationCap, Store } from "lucide-react";
 import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
 export default function Landing() {
-  const [, setLocation] = useLocation();
-
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative selection:bg-primary/30">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-accent/20 via-background to-background" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-      </div>
-
-      <div className="relative z-10">
-        <header className="container mx-auto px-4 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={brandLogo} alt="PickIT" className="h-10 w-auto object-contain" />
-          </div>
-          <div className="flex gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/login">Log in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/auth/register">Sign up</Link>
-            </Button>
-          </div>
-        </header>
-
-        <main className="container mx-auto px-4 pt-20 pb-32 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto space-y-8"
+    <div className="min-h-screen bg-[#f7f8fb] text-slate-900">
+      <header className="container mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <img src={brandLogo} alt="PickIT" className="h-8 w-8 object-contain rounded-full" />
+          <span className="font-semibold text-slate-900">
+            Pick<span className="text-emerald-500">IT</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="/auth/login" className="text-sm font-medium text-slate-700 hover:text-slate-900">
+            Login
+          </Link>
+          <Button
+            asChild
+            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-5 h-9 text-sm font-medium shadow-none"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4 border border-primary/20">
-              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-              Ready. Retrieve. Print.
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground">
-              PickIt <span className="text-2xl align-top text-muted-foreground">s</span>
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Ready. Retrieve.</span>
-            </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Scan a QR code, upload your files, and track your print jobs in real-time. 
-              The slickest print-order platform for students and shop owners.
-            </p>
+            <Link href="/auth/register">Get Started</Link>
+          </Button>
+        </div>
+      </header>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg group" asChild>
-                <Link href="/auth/register?role=student">
-                  I'm a Student
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto h-14 px-8 text-lg group" asChild>
-                <Link href="/join/SCAN">
-                  <ScanLine className="mr-2 w-5 h-5" />
-                  Scan & Join
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg" asChild>
-                <Link href="/auth/register?role=owner">
-                  I own a shop
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
+      <main className="container mx-auto px-6 pt-16 pb-24 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-3xl mx-auto"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-medium border border-emerald-100">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Now Live on Campus
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-32"
-          >
-            <div className="bg-card border border-border rounded-2xl p-8 text-left relative overflow-hidden group">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                <Zap className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Instant Uploads</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                No more USB drives or emailing yourself. Just scan the shop's QR code and drop your files right from your phone.
-              </p>
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+          <p className="mt-8 text-lg text-slate-600">Queue-Free Campus Printing</p>
 
-            <div className="bg-card border border-border rounded-2xl p-8 text-left relative overflow-hidden group">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                <LayoutDashboard className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Live Tracking</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Know exactly when your prints are ready. We'll update you as your order moves from pending to printing to done.
-              </p>
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+          <h1 className="mt-4 font-extrabold tracking-tight leading-none text-[88px] md:text-[140px]">
+            <span className="text-[#1a1f4d]">Pick</span>
+            <span className="text-emerald-500">IT</span>
+          </h1>
 
-            <div className="bg-card border border-border rounded-2xl p-8 text-left relative overflow-hidden group">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                <Printer className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Shop Management</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                For shop owners: a dedicated dashboard to manage incoming orders, set pricing, and view daily revenue analytics.
-              </p>
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </motion.div>
-        </main>
-      </div>
+          <p className="mt-2 text-xs tracking-[0.4em] text-slate-400">
+            REQ &nbsp;·&nbsp; READY &nbsp;·&nbsp; RETRIEVE
+          </p>
+
+          <p className="mt-10 text-slate-600 text-base md:text-lg leading-relaxed">
+            Upload documents from anywhere. Skip the queue.
+            <br />
+            Pick up when it's ready.
+          </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-auto h-12 px-7 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-base font-medium shadow-[0_8px_24px_rgba(37,99,235,0.25)]"
+            >
+              <Link href="/auth/register?role=student">
+                <GraduationCap className="mr-2 h-5 w-5" />
+                I'm a Student
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-auto h-12 px-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-base font-medium shadow-[0_8px_24px_rgba(15,23,42,0.2)]"
+            >
+              <Link href="/auth/register?role=owner">
+                <Store className="mr-2 h-5 w-5" />
+                I Own a Shop
+              </Link>
+            </Button>
+          </div>
+
+          <p className="mt-10 text-sm text-slate-400">
+            Trusted by students across 50+ campuses
+          </p>
+        </motion.div>
+      </main>
     </div>
   );
 }
