@@ -20,29 +20,17 @@ import {
   FileText,
   Sparkles,
 } from "lucide-react";
+import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
-function BrandMark({ size = 36, withTagline = false }: { size?: number; withTagline?: boolean }) {
+function BrandMark({ size = 36 }: { size?: number; withTagline?: boolean }) {
   return (
-    <Link href="/" aria-label="PickIT home" className="group inline-flex items-center gap-2.5 select-none">
-      <span
-        className="relative inline-flex items-center justify-center rounded-xl text-white font-bold shadow-[0_8px_24px_rgba(26,31,77,0.3)] transition-transform group-hover:scale-105"
-        style={{
-          width: size,
-          height: size,
-          background: "linear-gradient(135deg, #1a1f4d 0%, #2c3585 55%, #10b981 140%)",
-        }}
-      >
-        <span className="text-base tracking-tight" style={{ fontSize: size * 0.45 }}>P</span>
-        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-white" />
-      </span>
-      <span className="flex flex-col leading-tight">
-        <span className="text-[17px] font-semibold tracking-tight text-[#1a1f4d]" style={{ fontSize: size * 0.5 }}>
-          Pick<span className="text-emerald-500">IT</span>
-        </span>
-        {withTagline && (
-          <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Campus Printing</span>
-        )}
-      </span>
+    <Link href="/" aria-label="PickIT home" className="group inline-flex items-center select-none">
+      <img
+        src={brandLogo}
+        alt="PickIT"
+        style={{ height: size * 1.2, width: "auto" }}
+        className="object-contain transition-transform group-hover:scale-105"
+      />
     </Link>
   );
 }
@@ -275,25 +263,8 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-14">
           <div className="grid md:grid-cols-4 gap-10">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="relative inline-flex items-center justify-center rounded-xl text-white font-bold shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
-                  style={{
-                    width: 44,
-                    height: 44,
-                    background: "linear-gradient(135deg, #ffffff 0%, #d1fae5 55%, #10b981 140%)",
-                    color: "#1a1f4d",
-                  }}
-                >
-                  <span className="text-lg">P</span>
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#1a1f4d]" />
-                </span>
-                <div className="leading-tight">
-                  <p className="text-white font-semibold text-lg">
-                    Pick<span className="text-emerald-400">IT</span>
-                  </p>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Campus Printing</p>
-                </div>
+              <div className="bg-white inline-flex p-2 rounded-xl">
+                <img src={brandLogo} alt="PickIT" className="h-12 w-auto object-contain" />
               </div>
               <p className="mt-5 text-sm text-slate-400 max-w-md leading-relaxed">
                 The fastest way to print on campus. Scan, upload, and pick up — no queue, no chaos.
