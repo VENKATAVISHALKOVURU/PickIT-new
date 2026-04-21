@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { GraduationCap, Store } from "lucide-react";
+import { GraduationCap, Store, Zap, LayoutDashboard, Printer } from "lucide-react";
 import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
 export default function Landing() {
@@ -82,6 +82,43 @@ export default function Landing() {
           <p className="mt-10 text-sm text-slate-400">
             Trusted by students across 50+ campuses
           </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-24 text-left"
+        >
+          <div className="bg-white border border-slate-200 rounded-2xl p-7 hover:shadow-lg hover:border-emerald-200 transition-all">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center mb-5">
+              <Zap className="w-5 h-5 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-[#1a1f4d]">Instant Uploads</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              No more USB drives or emailing yourself. Just scan the shop's QR code and drop your files right from your phone.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-7 hover:shadow-lg hover:border-emerald-200 transition-all">
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center mb-5">
+              <LayoutDashboard className="w-5 h-5 text-emerald-500" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-[#1a1f4d]">Live Tracking</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Know exactly when your prints are ready. We'll update you as your order moves from pending to printing to done.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-7 hover:shadow-lg hover:border-emerald-200 transition-all">
+            <div className="w-11 h-11 rounded-xl bg-slate-900/5 flex items-center justify-center mb-5">
+              <Printer className="w-5 h-5 text-slate-900" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-[#1a1f4d]">Shop Management</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              For shop owners: a dedicated dashboard to manage incoming orders, set pricing, and view daily revenue analytics.
+            </p>
+          </div>
         </motion.div>
       </main>
     </div>
