@@ -58,7 +58,7 @@ export default function Register() {
         setAuth(data.token, data.user);
         toast.success("Registered successfully");
         if (data.user.role === "owner") {
-          setLocation("/owner/overview");
+          setLocation("/owner/qr");
         } else {
           setLocation("/student/upload");
         }
