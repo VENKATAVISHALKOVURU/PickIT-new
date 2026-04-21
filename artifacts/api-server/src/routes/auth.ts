@@ -4,7 +4,25 @@ import { db, usersTable, shopsTable, pricingConfigTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
 import { requireAuth, signToken } from "../middlewares/auth";
-import { randomUUID } from "crypto";
+import { randomBytes } from "crypto";
+
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateShopCode(): string {
+  const bytes = randomBytes(6);
+  let out = "";
+  for (let i = 0; i < 6; i++) out += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  return `PK-${out.slice(0, 3)}${out.slice(3)}`;
+}
+
+async function generateUniqueShopCode(): Promise<string> {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const code = generateShopCode();
+    const existing = await db.select().from(shopsTable).where(eq(shopsTable.shopCode, code));
+    if (existing.length === 0) return code;
+  }
+  return `PK-${randomBytes(4).toString("hex").toUpperCase()}`;
+}
 
 const router: IRouter = Router();
 
@@ -33,7 +51,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   }).returning();
 
   if (role === "owner") {
-    const shopCode = randomUUID();
+    const shopCode = await generateUniqueShopCode();
     const [shop] = await db.insert(shopsTable).values({
       ownerId: user.id,
       name: shopName || `${name}'s Print Shop`,
