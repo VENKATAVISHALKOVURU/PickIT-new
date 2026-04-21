@@ -71,7 +71,8 @@ export default function Landing() {
         <div className="absolute -top-20 right-0 w-[420px] h-[420px] rounded-full bg-emerald-200/40 blur-3xl" />
       </div>
 
-      <header className="container mx-auto px-6 py-4 grid grid-cols-3 items-center">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div className="container mx-auto px-6 py-3 grid grid-cols-3 items-center">
         <div className="flex justify-start">
           <BrandMark size={96} />
         </div>
@@ -90,6 +91,7 @@ export default function Landing() {
           >
             <Link href="/auth/register">Get Started</Link>
           </Button>
+        </div>
         </div>
       </header>
 
@@ -298,10 +300,10 @@ export default function Landing() {
             <div>
               <p className="text-white text-sm font-semibold mb-4">Legal</p>
               <ul className="space-y-2.5 text-sm">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Terms &amp; Conditions</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Refund Policy</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Cookie Policy</a></li>
+                <li><Link href="/legal/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms" className="hover:text-emerald-400 transition-colors">Terms &amp; Conditions</Link></li>
+                <li><Link href="/legal/refund" className="hover:text-emerald-400 transition-colors">Refund Policy</Link></li>
+                <li><Link href="/legal/cookies" className="hover:text-emerald-400 transition-colors">Cookie Policy</Link></li>
               </ul>
             </div>
           </div>

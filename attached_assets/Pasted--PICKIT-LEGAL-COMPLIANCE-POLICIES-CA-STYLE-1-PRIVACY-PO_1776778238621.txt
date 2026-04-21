@@ -1,0 +1,107 @@
+📜 PICKIT – LEGAL & COMPLIANCE POLICIES (CA-STYLE)
+🔐 1. PRIVACY POLICY
+
+PickIT Privacy Policy
+
+This Privacy Policy outlines how PickIT (“the Platform”) collects, uses, and safeguards user information.
+
+1.1 Information Collected
+
+The Platform may collect the following data:
+
+Personal details (Name, Email Address, Phone Number)
+Documents uploaded for printing purposes
+Transactional and activity-related data
+1.2 Purpose of Collection
+
+The collected information is used strictly for:
+
+Processing and managing print requests
+Connecting users with registered print shops
+Enhancing platform performance and user experience
+1.3 Data Usage & Confidentiality
+PickIT does not sell, rent, or trade user data to third parties
+Uploaded files are used solely for printing-related operations
+Files may be automatically deleted within 24–48 hours after processing, unless required for operational purposes
+1.4 Data Security
+
+Reasonable security measures are implemented to protect user data. However, users acknowledge that no digital system guarantees absolute security.
+
+1.5 User Rights
+
+Users may:
+
+Request deletion of personal data
+Raise privacy-related concerns through official contact channels
+📄 2. TERMS & CONDITIONS
+
+PickIT Terms of Use
+
+By accessing or using PickIT, users agree to the following terms:
+
+2.1 Nature of Platform
+
+PickIT acts as an intermediary platform connecting students and print service providers.
+The Platform does not own, operate, or control printing facilities.
+
+2.2 User Obligations
+
+Users agree to:
+
+Provide accurate and valid information
+Upload only lawful and appropriate content
+Comply with applicable laws and platform guidelines
+2.3 Shop Owner Obligations
+
+Registered shop owners must:
+
+Fulfill orders accurately and in a timely manner
+Maintain transparent and fair pricing
+Ensure proper handling of user documents
+2.4 Limitation of Liability
+
+PickIT shall not be held liable for:
+
+Print quality discrepancies
+Delays or failures by shop owners
+Errors in user-submitted files
+2.5 Account Usage
+Each user is permitted to maintain only one account
+Any misuse, fraudulent activity, or policy violation may result in suspension or termination
+💸 3. REFUND POLICY
+
+PickIT Refund Policy
+
+3.1 Eligibility for Refund
+
+Refunds may be initiated under the following circumstances:
+
+The print request is rejected by the shop
+The order is not fulfilled
+Significant service failure attributable to the platform or shop
+3.2 Non-Eligibility
+
+Refunds shall not be applicable in cases where:
+
+Incorrect or unsuitable files are uploaded by the user
+The user cancels after printing has commenced
+3.3 Refund Process
+Refunds may be initiated automatically or upon request
+Processing time: 3 to 7 working days, depending on the payment method
+🍪 4. COOKIE POLICY
+
+PickIT Cookie Policy
+
+4.1 Usage of Cookies
+
+PickIT uses cookies for:
+
+Maintaining user sessions (login persistence)
+Enhancing performance and usability
+Basic analytics for system improvement
+4.2 Data Ethics
+Cookies are not used for selling user data
+No cross-platform or third-party tracking is performed
+4.3 User Control
+
+Users may disable cookies via browser settings; however, certain functionalities of the platform may be affected.

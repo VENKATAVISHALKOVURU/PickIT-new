@@ -11,6 +11,7 @@ import Landing from "@/pages/landing";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import JoinShop from "@/pages/join";
+import Policy from "@/pages/policy";
 
 // Owner pages
 import OwnerOverview from "@/pages/owner/overview";
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/auth/login" component={Login} />
       <Route path="/auth/register" component={Register} />
       <Route path="/join/:shopCode" component={JoinShop} />
+      <Route path="/legal/:key" component={Policy} />
 
       {/* Owner Routes */}
       <Route path="/owner/overview">
