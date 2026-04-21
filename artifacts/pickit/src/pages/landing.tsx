@@ -22,14 +22,14 @@ import {
 } from "lucide-react";
 import brandLogo from "@assets/WhatsApp_Image_2026-04-17_at_12.01.44_PM_1776407538276.jpeg";
 
-function BrandMark({ size = 36 }: { size?: number; withTagline?: boolean }) {
+function BrandMark({ size = 56 }: { size?: number; withTagline?: boolean }) {
   return (
     <Link href="/" aria-label="PickIT home" className="group inline-flex items-center select-none">
       <img
         src={brandLogo}
         alt="PickIT"
-        style={{ height: size * 1.2, width: "auto" }}
-        className="object-contain transition-transform group-hover:scale-105"
+        style={{ height: size, width: "auto" }}
+        className="object-contain transition-transform group-hover:scale-105 mix-blend-multiply"
       />
     </Link>
   );
@@ -71,20 +71,22 @@ export default function Landing() {
         <div className="absolute -top-20 right-0 w-[420px] h-[420px] rounded-full bg-emerald-200/40 blur-3xl" />
       </div>
 
-      <header className="container mx-auto px-6 py-5 flex items-center justify-between">
-        <BrandMark size={40} withTagline />
-        <nav className="hidden md:flex items-center gap-7 text-sm text-slate-600">
+      <header className="container mx-auto px-6 py-4 grid grid-cols-3 items-center">
+        <div className="flex justify-start">
+          <BrandMark size={96} />
+        </div>
+        <nav className="hidden md:flex items-center justify-center gap-9 text-[15px] font-medium text-slate-700">
           <a href="#features" className="hover:text-[#1a1f4d] transition-colors">Features</a>
           <a href="#stats" className="hover:text-[#1a1f4d] transition-colors">Impact</a>
           <a href="#owners" className="hover:text-[#1a1f4d] transition-colors">For shops</a>
         </nav>
-        <div className="flex items-center gap-3">
-          <Link href="/auth/login" className="text-sm font-medium text-slate-700 hover:text-[#1a1f4d] px-2">
+        <div className="flex items-center justify-end gap-3">
+          <Link href="/auth/login" className="text-[15px] font-medium text-slate-700 hover:text-[#1a1f4d] px-2">
             Login
           </Link>
           <Button
             asChild
-            className="rounded-full bg-[#1a1f4d] hover:bg-[#0f1438] text-white px-5 h-9 text-sm font-medium shadow-[0_6px_20px_rgba(26,31,77,0.2)]"
+            className="rounded-full bg-[#1a1f4d] hover:bg-[#0f1438] text-white px-5 h-10 text-sm font-semibold shadow-[0_6px_20px_rgba(26,31,77,0.2)]"
           >
             <Link href="/auth/register">Get Started</Link>
           </Button>
@@ -263,8 +265,8 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-14">
           <div className="grid md:grid-cols-4 gap-10">
             <div className="md:col-span-2">
-              <div className="bg-white inline-flex p-2 rounded-xl">
-                <img src={brandLogo} alt="PickIT" className="h-12 w-auto object-contain" />
+              <div className="bg-white inline-flex p-3 rounded-2xl shadow-lg">
+                <img src={brandLogo} alt="PickIT" className="h-14 w-auto object-contain" />
               </div>
               <p className="mt-5 text-sm text-slate-400 max-w-md leading-relaxed">
                 The fastest way to print on campus. Scan, upload, and pick up — no queue, no chaos.
