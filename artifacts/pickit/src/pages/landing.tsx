@@ -204,87 +204,182 @@ function SiteNav() {
   );
 }
 
-function Printer3D() {
+function AppShowcase3D() {
   return (
-    <div className="relative w-[320px] sm:w-[420px] h-[260px] sm:h-[320px] [perspective:1200px]" data-testid="hero-printer-3d">
-      {/* Floor shadow */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-2 w-[80%] h-6 rounded-[50%] bg-slate-900/15 blur-2xl" />
+    <div
+      className="relative mx-auto w-full max-w-[1080px] [perspective:2200px]"
+      data-testid="hero-app-showcase"
+    >
+      {/* Ambient color wash behind the device */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[78%] h-[80%] rounded-[60px] bg-gradient-to-br from-blue-400/25 via-emerald-300/15 to-violet-400/20 blur-3xl" />
+      </div>
 
-      {/* Stage that gently rotates */}
       <motion.div
-        className="absolute inset-0 [transform-style:preserve-3d]"
-        animate={{ rotateY: [-8, 8, -8], rotateX: [6, 2, 6] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        initial={{ opacity: 0, y: 40, rotateX: 28 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 14 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        className="relative [transform-style:preserve-3d]"
+        style={{ transformOrigin: "50% 100%" }}
       >
-        {/* Paper sheets ejecting upward */}
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute left-1/2 -translate-x-1/2 w-24 sm:w-32 h-32 sm:h-40 rounded-md bg-white border border-slate-200 shadow-[0_18px_40px_-15px_rgba(15,23,42,0.35)] origin-bottom"
-            style={{ transform: `translateZ(40px)` }}
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: [60, -10, -90], opacity: [0, 1, 0] }}
-            transition={{ duration: 3.6, repeat: Infinity, delay: i * 1.2, ease: "easeOut" }}
-          >
-            <div className="p-2.5 space-y-1.5">
-              <div className="h-1.5 w-3/4 bg-slate-200 rounded" />
-              <div className="h-1.5 w-full bg-slate-100 rounded" />
-              <div className="h-1.5 w-5/6 bg-slate-100 rounded" />
-              <div className="h-1.5 w-2/3 bg-slate-100 rounded" />
-              <div className="mt-3 h-10 rounded bg-gradient-to-br from-blue-100 to-emerald-100" />
-              <div className="mt-2 h-1.5 w-4/5 bg-slate-100 rounded" />
-              <div className="h-1.5 w-3/5 bg-slate-100 rounded" />
+        {/* Browser chrome */}
+        <div className="rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-50 border border-b-0 border-slate-200 px-4 py-3 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-rose-400/80" />
+          <span className="h-3 w-3 rounded-full bg-amber-400/80" />
+          <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
+          <div className="ml-4 hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-slate-200 text-[11px] text-slate-500 font-mono">
+            <ShieldCheck className="h-3 w-3 text-emerald-500" />
+            pickit.app/student/orders
+          </div>
+        </div>
+
+        {/* Dashboard surface */}
+        <div className="relative rounded-b-2xl bg-white border border-slate-200 shadow-[0_60px_120px_-40px_rgba(15,23,42,0.45),0_30px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden">
+          {/* Top toolbar */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/60">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#1a1f4d] to-[#2b3580] flex items-center justify-center text-white">
+                <Printer className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[#1a1f4d] leading-tight">Print Hub</p>
+                <p className="text-[10px] text-slate-400">Live queue</p>
+              </div>
             </div>
-          </motion.div>
-        ))}
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                3 active
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
+                ₹2,840 today
+              </span>
+            </div>
+          </div>
 
-        {/* Printer top — output slot */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-[58px] w-[260px] sm:w-[320px] h-[26px] rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-300 shadow-[0_-2px_0_rgba(255,255,255,0.7)_inset]"
-          style={{ transform: "translateZ(50px)" }}
-        >
-          <div className="absolute left-1/2 -translate-x-1/2 top-1.5 w-[78%] h-1.5 bg-slate-800/85 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]" />
+          <div className="grid grid-cols-12 gap-4 p-5">
+            {/* Left rail — order list */}
+            <div className="col-span-12 md:col-span-5 space-y-2.5">
+              {[
+                { id: "PK-2847", name: "Thesis_Final.pdf", pages: 84, status: "Printing", color: "emerald", price: "₹168", active: true },
+                { id: "PK-2846", name: "Lab_Report.docx", pages: 12, status: "Queued", color: "blue", price: "₹24" },
+                { id: "PK-2845", name: "Posters_A3.pdf", pages: 4, status: "Ready", color: "violet", price: "₹120" },
+              ].map((o, i) => (
+                <motion.div
+                  key={o.id}
+                  initial={{ opacity: 0, x: -16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 + i * 0.12, duration: 0.5 }}
+                  className={`flex items-center gap-3 p-3 rounded-xl border ${o.active ? "border-emerald-200 bg-emerald-50/50" : "border-slate-100 bg-white"}`}
+                >
+                  <div className={`h-9 w-9 shrink-0 rounded-lg bg-${o.color}-100 text-${o.color}-600 flex items-center justify-center`}>
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12px] font-semibold text-slate-800 truncate">{o.name}</p>
+                    <p className="text-[10px] text-slate-400">#{o.id} · {o.pages} pages</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[12px] font-bold text-[#1a1f4d]">{o.price}</p>
+                    <p className={`text-[10px] font-semibold text-${o.color}-600`}>{o.status}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Right rail — live order */}
+            <div className="col-span-12 md:col-span-7 rounded-2xl border border-slate-100 bg-gradient-to-br from-[#0f1438] via-[#1a1f4d] to-[#2b3580] text-white p-5 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-30 [background:radial-gradient(circle_at_20%_-10%,rgba(16,185,129,0.45),transparent_45%),radial-gradient(circle_at_120%_120%,rgba(59,130,246,0.45),transparent_50%)]" />
+              <div className="relative">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-emerald-300/80 font-semibold">Now printing</p>
+                    <p className="mt-1 text-base sm:text-lg font-bold">Thesis_Final.pdf</p>
+                    <p className="text-[11px] text-blue-200/80">Order #PK-2847 · 84 pages · B/W · 2 copies</p>
+                  </div>
+                  <span className="font-mono text-[10px] px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
+                    ETA 12 min
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mt-5">
+                  <div className="flex justify-between text-[10px] text-blue-200/70 mb-1.5">
+                    <span>Pending</span>
+                    <span>Accepted</span>
+                    <span className="text-emerald-300 font-semibold">Printing</span>
+                    <span>Ready</span>
+                  </div>
+                  <div className="relative h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full"
+                      initial={{ width: "0%" }}
+                      whileInView={{ width: "68%" }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.8, duration: 1.6, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Mini stats */}
+                <div className="mt-5 grid grid-cols-3 gap-2">
+                  {[
+                    { l: "Pages done", v: "57 / 84", c: "text-emerald-300" },
+                    { l: "Cost", v: "₹168", c: "text-blue-200" },
+                    { l: "Saved time", v: "18 min", c: "text-amber-300" },
+                  ].map((s) => (
+                    <div key={s.l} className="rounded-lg bg-white/5 border border-white/10 p-2.5">
+                      <p className="text-[9px] uppercase tracking-wider text-blue-200/60">{s.l}</p>
+                      <p className={`text-sm font-bold ${s.c}`}>{s.v}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Payment row */}
+                <div className="mt-4 flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                  <div className="flex items-center gap-2 text-[11px] text-blue-100">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    Paid via UPI · GPay
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-300">✓ Confirmed</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Printer body */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 bottom-2 w-[280px] sm:w-[340px] h-[80px] rounded-2xl bg-gradient-to-b from-[#1a1f4d] to-[#0f1438] shadow-[0_30px_60px_-20px_rgba(26,31,77,0.5)] border border-[#0a0e2a]"
-          style={{ transform: "translateZ(20px)" }}
+        {/* Floating accent chips */}
+        <motion.div
+          className="hidden md:flex absolute -left-10 top-24 items-center gap-2 rounded-2xl bg-white/90 backdrop-blur-md border border-white shadow-[0_24px_60px_-20px_rgba(15,23,42,0.3)] px-3.5 py-2.5"
+          style={{ transform: "translateZ(80px)" }}
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* LED strip */}
-          <div className="absolute left-5 top-3 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.9)] animate-pulse" />
-            <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-            <span className="h-2 w-2 rounded-full bg-slate-500" />
+          <span className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <div className="leading-tight">
+            <p className="text-[10px] text-slate-400 font-medium">New order</p>
+            <p className="text-[12px] font-semibold text-[#1a1f4d]">Lab_Report.docx</p>
           </div>
-          {/* Display panel */}
-          <div className="absolute right-5 top-3 px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-400/40 backdrop-blur-sm">
-            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-emerald-300 tracking-wider">
-              PICKIT • READY
-            </span>
-          </div>
-          {/* Tray */}
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-[78%] h-3 rounded-b-xl bg-slate-800/80 border-t border-white/5" />
-          {/* Side accents */}
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl bg-gradient-to-b from-blue-500/40 to-emerald-500/40" />
-          <div className="absolute right-0 top-0 bottom-0 w-1.5 rounded-r-2xl bg-gradient-to-b from-emerald-500/40 to-blue-500/40" />
-        </div>
+        </motion.div>
 
-        {/* Floating ink dots */}
-        {[
-          { c: "bg-blue-500", x: -120, d: 0 },
-          { c: "bg-emerald-500", x: 130, d: 0.6 },
-          { c: "bg-amber-400", x: -80, d: 1.2 },
-          { c: "bg-rose-400", x: 90, d: 1.8 },
-        ].map((dot, i) => (
-          <motion.span
-            key={i}
-            className={`absolute left-1/2 bottom-24 h-2 w-2 rounded-full ${dot.c}`}
-            style={{ transform: `translateZ(60px)` }}
-            animate={{ x: [0, dot.x], y: [0, -90 - i * 8], opacity: [0.9, 0] }}
-            transition={{ duration: 2.4, repeat: Infinity, delay: dot.d, ease: "easeOut" }}
-          />
-        ))}
+        <motion.div
+          className="hidden md:flex absolute -right-8 top-40 items-center gap-2 rounded-2xl bg-white/90 backdrop-blur-md border border-white shadow-[0_24px_60px_-20px_rgba(15,23,42,0.3)] px-3.5 py-2.5"
+          style={{ transform: "translateZ(80px)" }}
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+        >
+          <span className="h-8 w-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+            <Clock className="h-4 w-4" />
+          </span>
+          <div className="leading-tight">
+            <p className="text-[10px] text-slate-400 font-medium">Avg pickup</p>
+            <p className="text-[12px] font-semibold text-[#1a1f4d]">5 min faster</p>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
@@ -399,9 +494,9 @@ export default function Landing() {
             Upload documents from anywhere. Skip the queue. Pick up when it's ready.
           </p>
 
-          {/* 3D Printer scene */}
-          <div className="mt-12 flex justify-center">
-            <Printer3D />
+          {/* Premium product showcase */}
+          <div className="mt-16 mb-2">
+            <AppShowcase3D />
           </div>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
