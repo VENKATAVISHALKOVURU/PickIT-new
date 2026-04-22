@@ -285,3 +285,70 @@
     inset: -1px;
   }
 }
+
+/* ─── PickIT Motion Graphics ─── */
+@keyframes pk-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-18px) rotate(var(--r, 0deg)); }
+}
+@keyframes pk-float-slow {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-26px) translateX(8px) rotate(var(--r, 0deg)); }
+}
+@keyframes pk-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pk-orbit {
+  from { transform: rotate(0deg) translateX(var(--orbit, 180px)) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(var(--orbit, 180px)) rotate(-360deg); }
+}
+@keyframes pk-pulse-ring {
+  0%   { transform: scale(0.85); opacity: 0.7; }
+  80%  { transform: scale(1.6);  opacity: 0; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+@keyframes pk-grid-pan {
+  from { background-position: 0 0; }
+  to   { background-position: 60px 60px; }
+}
+@keyframes pk-tilt {
+  0%, 100% { transform: perspective(800px) rotateY(-6deg) rotateX(4deg); }
+  50%      { transform: perspective(800px) rotateY(6deg) rotateX(-4deg); }
+}
+
+.pk-float       { animation: pk-float 6s ease-in-out infinite; }
+.pk-float-slow  { animation: pk-float-slow 9s ease-in-out infinite; }
+.pk-tilt        { animation: pk-tilt 10s ease-in-out infinite; transform-style: preserve-3d; }
+.pk-pulse-ring  { animation: pk-pulse-ring 2.4s cubic-bezier(.2,.8,.2,1) infinite; }
+
+.pk-glass {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 20px 60px -20px rgba(26,31,77,0.25), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.pk-glass-dark {
+  background: rgba(26,31,77,0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.pk-shimmer-text {
+  background: linear-gradient(110deg, #1a1f4d 35%, #10b981 50%, #1a1f4d 65%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: pk-shimmer 3.5s linear infinite;
+}
+.pk-grid-bg {
+  background-image:
+    linear-gradient(rgba(26,31,77,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,31,77,0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: pk-grid-pan 18s linear infinite;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
