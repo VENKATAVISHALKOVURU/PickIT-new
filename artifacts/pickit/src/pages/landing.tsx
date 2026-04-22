@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { motion, useInView, animate, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useInView, animate, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import {
   GraduationCap,
@@ -236,6 +236,33 @@ function AppShowcase3D() {
   const [sheets, setSheets] = useState<number[]>([]);
   const sheetIdRef = useRef(0);
   const paused = useRef(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Mouse-tracked 3D tilt (TiltedCard-style)
+  const tiltSpring = { damping: 30, stiffness: 100, mass: 1.4 };
+  const rotateX = useSpring(useMotionValue(0), tiltSpring);
+  const rotateY = useSpring(useMotionValue(0), tiltSpring);
+  const scale = useSpring(1, tiltSpring);
+
+  function handleTilt(e: React.MouseEvent<HTMLDivElement>) {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left - rect.width / 2;
+    const offsetY = e.clientY - rect.top - rect.height / 2;
+    const amp = 8;
+    rotateX.set((offsetY / (rect.height / 2)) * -amp);
+    rotateY.set((offsetX / (rect.width / 2)) * amp);
+  }
+  function handleEnter() {
+    paused.current = true;
+    scale.set(1.02);
+  }
+  function handleLeave() {
+    paused.current = false;
+    rotateX.set(0);
+    rotateY.set(0);
+    scale.set(1);
+  }
 
   const selected = DEMO_ORDERS.find((o) => o.id === selectedId)!;
   const totalPages = selected.pages * selected.copies;
@@ -287,40 +314,27 @@ function AppShowcase3D() {
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[1080px] [perspective:2200px]"
+      className="relative mx-auto w-full max-w-[1080px] [perspective:1400px]"
       data-testid="hero-app-showcase"
-      onMouseEnter={() => (paused.current = true)}
-      onMouseLeave={() => (paused.current = false)}
+      onMouseMove={handleTilt}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[78%] h-[80%] rounded-[60px] bg-gradient-to-br from-blue-400/25 via-emerald-300/15 to-violet-400/20 blur-3xl" />
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 40, rotateX: 22 }}
-        whileInView={{ opacity: 1, y: 0, rotateX: 10 }}
+        ref={cardRef}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-        className="relative [transform-style:preserve-3d]"
-        style={{ transformOrigin: "50% 100%" }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        style={{ rotateX, rotateY, scale, transformStyle: "preserve-3d" }}
+        className="relative will-change-transform"
       >
-        {/* Browser chrome */}
-        <div className="rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-50 border border-b-0 border-slate-200 px-4 py-3 flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-rose-400/80" />
-          <span className="h-3 w-3 rounded-full bg-amber-400/80" />
-          <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
-          <div className="ml-4 hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-slate-200 text-[11px] text-slate-500 font-mono">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" />
-            pickit.app/student/orders
-          </div>
-          <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            LIVE DEMO
-          </span>
-        </div>
-
         {/* Dashboard surface */}
-        <div className="relative rounded-b-2xl bg-white border border-slate-200 shadow-[0_60px_120px_-40px_rgba(15,23,42,0.45),0_30px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden">
+        <div className="relative rounded-2xl bg-white border border-slate-200 shadow-[0_60px_120px_-40px_rgba(15,23,42,0.45),0_30px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden" style={{ transform: "translateZ(0)" }}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/60">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#1a1f4d] to-[#2b3580] flex items-center justify-center text-white">
@@ -411,31 +425,10 @@ function AppShowcase3D() {
                   </span>
                 </div>
 
-                {/* Mini printer + paper eject */}
-                <div className="mt-4 relative h-[68px]">
-                  <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[58%] h-[26px] rounded-t-lg bg-slate-200/90 border border-slate-300 flex items-center justify-center">
-                    <div className="w-[80%] h-1 rounded-full bg-slate-900/80" />
-                  </div>
-                  <AnimatePresence>
-                    {sheets.map((id) => (
-                      <motion.div
-                        key={id}
-                        initial={{ y: 0, opacity: 0, scale: 0.9 }}
-                        animate={{ y: -28, opacity: 1, scale: 1 }}
-                        exit={{ y: -56, opacity: 0 }}
-                        transition={{ duration: 1.4, ease: "easeOut" }}
-                        className="absolute left-1/2 -translate-x-1/2 top-0 w-[34%] h-[44px] rounded-sm bg-white border border-slate-300 shadow-[0_8px_18px_-6px_rgba(0,0,0,0.35)] origin-bottom"
-                      >
-                        <div className="p-1 space-y-0.5">
-                          <div className="h-[2px] w-3/4 bg-slate-300 rounded" />
-                          <div className="h-[2px] w-full bg-slate-200 rounded" />
-                          <div className="h-[2px] w-5/6 bg-slate-200 rounded" />
-                          <div className="h-[2px] w-2/3 bg-slate-200 rounded" />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-[34px] w-[64%] h-[26px] rounded-b-lg bg-gradient-to-b from-[#2b3580] to-[#0f1438] border border-[#0a0e2a] flex items-center justify-between px-2.5">
+                {/* Mini printer + paper printing toward viewer */}
+                <div className="mt-4 relative h-[160px] [perspective:900px]" style={{ transformStyle: "preserve-3d" }}>
+                  {/* Printer body — sits at top, paper exits below */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[64%] h-[34px] rounded-t-lg bg-gradient-to-b from-[#2b3580] to-[#0f1438] border border-[#0a0e2a] flex items-center justify-between px-2.5 z-20">
                     <div className="flex items-center gap-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)] animate-pulse" />
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
@@ -444,6 +437,51 @@ function AppShowcase3D() {
                       {pagesDone.toString().padStart(2, "0")} / {totalPages}
                     </span>
                   </div>
+                  {/* Paper exit slot */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[34px] w-[58%] h-[14px] rounded-b-lg bg-slate-200/90 border border-slate-300 flex items-center justify-center z-20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]">
+                    <div className="w-[82%] h-1 rounded-full bg-slate-900/85 shadow-[inset_0_1px_2px_rgba(0,0,0,0.7)]" />
+                  </div>
+
+                  {/* Sheets emerging toward the user (downward + translateZ) */}
+                  <AnimatePresence>
+                    {sheets.map((id, idx) => (
+                      <motion.div
+                        key={id}
+                        initial={{ y: 36, z: 0, rotateX: -85, opacity: 0, scale: 0.7 }}
+                        animate={{
+                          y: 64,
+                          z: 110,
+                          rotateX: 18,
+                          opacity: 1,
+                          scale: 1.05,
+                        }}
+                        exit={{
+                          y: 130,
+                          z: 220,
+                          rotateX: 30,
+                          opacity: 0,
+                          scale: 1.25,
+                        }}
+                        transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          transformStyle: "preserve-3d",
+                          transformOrigin: "top center",
+                          zIndex: 10 + idx,
+                        }}
+                        className="absolute left-1/2 -translate-x-1/2 top-0 w-[36%] h-[80px] rounded-[3px] bg-white border border-slate-200 shadow-[0_18px_28px_-10px_rgba(0,0,0,0.45),0_4px_10px_-3px_rgba(0,0,0,0.25)]"
+                      >
+                        <div className="p-1.5 space-y-1">
+                          <div className="h-[3px] w-3/4 bg-slate-300 rounded" />
+                          <div className="h-[2px] w-full bg-slate-200 rounded" />
+                          <div className="h-[2px] w-5/6 bg-slate-200 rounded" />
+                          <div className="h-[2px] w-2/3 bg-slate-200 rounded" />
+                          <div className={`mt-1 h-[14px] rounded-sm ${selected.color === "emerald" ? "bg-emerald-100" : selected.color === "blue" ? "bg-blue-100" : "bg-violet-100"}`} />
+                          <div className="h-[2px] w-4/5 bg-slate-200 rounded" />
+                          <div className="h-[2px] w-3/5 bg-slate-200 rounded" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
 
                 {/* Live progress */}
