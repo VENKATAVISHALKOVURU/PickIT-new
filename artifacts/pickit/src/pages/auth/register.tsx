@@ -37,6 +37,7 @@ export default function Register() {
   
   const searchParams = new URLSearchParams(window.location.search);
   const initialRole = (searchParams.get("role") as "student" | "owner") || "student";
+  const nextPath = searchParams.get("next");
   
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -57,7 +58,9 @@ export default function Register() {
       onSuccess: (data) => {
         setAuth(data.token, data.user);
         toast.success("Registered successfully");
-        if (data.user.role === "owner") {
+        if (nextPath && nextPath.startsWith("/")) {
+          setLocation(nextPath);
+        } else if (data.user.role === "owner") {
           setLocation("/owner/qr");
         } else {
           setLocation("/student/upload");

@@ -35,6 +35,9 @@ const NAV_LINKS = [
 function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Auth-aware Scan QR target: must be logged in to scan/join a shop
+  const isAuthed = typeof window !== "undefined" && !!localStorage.getItem("pickit_token");
+  const scanHref = isAuthed ? "/join/SCAN" : "/auth/register?next=/join/SCAN";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -91,9 +94,10 @@ function SiteNav() {
           {/* CTAs */}
           <div className="flex items-center gap-2 sm:gap-3 justify-end">
             <Link
-              href="/join/SCAN"
+              href={scanHref}
               className="hidden md:inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-600 hover:text-emerald-600 px-3 py-2 rounded-full hover:bg-emerald-50 transition-colors"
               data-testid="nav-scan"
+              title={isAuthed ? "Scan a shop QR code" : "Sign up to scan a shop QR"}
             >
               <QrCode className="h-4 w-4" />
               Scan QR
@@ -170,7 +174,7 @@ function SiteNav() {
                   </a>
                 ))}
                 <Link
-                  href="/join/SCAN"
+                  href={scanHref}
                   onClick={() => setMobileOpen(false)}
                   className="mt-2 px-4 py-3 rounded-xl text-[16px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 inline-flex items-center gap-2"
                 >
@@ -197,6 +201,92 @@ function SiteNav() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function Printer3D() {
+  return (
+    <div className="relative w-[320px] sm:w-[420px] h-[260px] sm:h-[320px] [perspective:1200px]" data-testid="hero-printer-3d">
+      {/* Floor shadow */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-2 w-[80%] h-6 rounded-[50%] bg-slate-900/15 blur-2xl" />
+
+      {/* Stage that gently rotates */}
+      <motion.div
+        className="absolute inset-0 [transform-style:preserve-3d]"
+        animate={{ rotateY: [-8, 8, -8], rotateX: [6, 2, 6] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {/* Paper sheets ejecting upward */}
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="absolute left-1/2 -translate-x-1/2 w-24 sm:w-32 h-32 sm:h-40 rounded-md bg-white border border-slate-200 shadow-[0_18px_40px_-15px_rgba(15,23,42,0.35)] origin-bottom"
+            style={{ transform: `translateZ(40px)` }}
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: [60, -10, -90], opacity: [0, 1, 0] }}
+            transition={{ duration: 3.6, repeat: Infinity, delay: i * 1.2, ease: "easeOut" }}
+          >
+            <div className="p-2.5 space-y-1.5">
+              <div className="h-1.5 w-3/4 bg-slate-200 rounded" />
+              <div className="h-1.5 w-full bg-slate-100 rounded" />
+              <div className="h-1.5 w-5/6 bg-slate-100 rounded" />
+              <div className="h-1.5 w-2/3 bg-slate-100 rounded" />
+              <div className="mt-3 h-10 rounded bg-gradient-to-br from-blue-100 to-emerald-100" />
+              <div className="mt-2 h-1.5 w-4/5 bg-slate-100 rounded" />
+              <div className="h-1.5 w-3/5 bg-slate-100 rounded" />
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Printer top — output slot */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 bottom-[58px] w-[260px] sm:w-[320px] h-[26px] rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-300 shadow-[0_-2px_0_rgba(255,255,255,0.7)_inset]"
+          style={{ transform: "translateZ(50px)" }}
+        >
+          <div className="absolute left-1/2 -translate-x-1/2 top-1.5 w-[78%] h-1.5 bg-slate-800/85 rounded-full shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]" />
+        </div>
+
+        {/* Printer body */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 bottom-2 w-[280px] sm:w-[340px] h-[80px] rounded-2xl bg-gradient-to-b from-[#1a1f4d] to-[#0f1438] shadow-[0_30px_60px_-20px_rgba(26,31,77,0.5)] border border-[#0a0e2a]"
+          style={{ transform: "translateZ(20px)" }}
+        >
+          {/* LED strip */}
+          <div className="absolute left-5 top-3 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.9)] animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+            <span className="h-2 w-2 rounded-full bg-slate-500" />
+          </div>
+          {/* Display panel */}
+          <div className="absolute right-5 top-3 px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-400/40 backdrop-blur-sm">
+            <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-emerald-300 tracking-wider">
+              PICKIT • READY
+            </span>
+          </div>
+          {/* Tray */}
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-[78%] h-3 rounded-b-xl bg-slate-800/80 border-t border-white/5" />
+          {/* Side accents */}
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl bg-gradient-to-b from-blue-500/40 to-emerald-500/40" />
+          <div className="absolute right-0 top-0 bottom-0 w-1.5 rounded-r-2xl bg-gradient-to-b from-emerald-500/40 to-blue-500/40" />
+        </div>
+
+        {/* Floating ink dots */}
+        {[
+          { c: "bg-blue-500", x: -120, d: 0 },
+          { c: "bg-emerald-500", x: 130, d: 0.6 },
+          { c: "bg-amber-400", x: -80, d: 1.2 },
+          { c: "bg-rose-400", x: 90, d: 1.8 },
+        ].map((dot, i) => (
+          <motion.span
+            key={i}
+            className={`absolute left-1/2 bottom-24 h-2 w-2 rounded-full ${dot.c}`}
+            style={{ transform: `translateZ(60px)` }}
+            animate={{ x: [0, dot.x], y: [0, -90 - i * 8], opacity: [0.9, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, delay: dot.d, ease: "easeOut" }}
+          />
+        ))}
+      </motion.div>
+    </div>
   );
 }
 
@@ -308,6 +398,11 @@ export default function Landing() {
           <p className="mt-10 text-slate-600 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
             Upload documents from anywhere. Skip the queue. Pick up when it's ready.
           </p>
+
+          {/* 3D Printer scene */}
+          <div className="mt-12 flex justify-center">
+            <Printer3D />
+          </div>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button

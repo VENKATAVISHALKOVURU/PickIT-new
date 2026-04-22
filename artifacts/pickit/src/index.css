@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -120,9 +120,10 @@
   --chart-4: 200 84% 54%;
   --chart-5: 280 65% 60%;
 
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
+  --app-font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --app-font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --app-font-serif: 'Bricolage Grotesque', Georgia, serif;
+  --app-font-mono: 'JetBrains Mono', Menlo, monospace;
   --radius: 0.75rem; 
 
   --shadow-2xs: 0px 2px 0px 0px hsl(221 83% 53% / 0.05);
@@ -364,3 +365,8 @@
 .pk-marquee:hover .pk-marquee-track {
   animation-play-state: paused;
 }
+
+/* Premium display font for headings */
+.font-display { font-family: var(--app-font-display); letter-spacing: -0.02em; }
+h1, h2, h3 { font-family: var(--app-font-display); letter-spacing: -0.02em; }
+body { font-feature-settings: "ss01", "ss02", "cv11"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }

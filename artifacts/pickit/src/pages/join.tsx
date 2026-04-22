@@ -83,17 +83,43 @@ function ScanInterface() {
       return;
     }
     setGeo("prompting");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeo("granted");
-      },
-      () => {
-        setGeo("denied");
-        toast.error("Location permission denied");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+
+    // Try a high-accuracy fix first; fall back to a low-accuracy fix if it
+    // takes too long (handles indoor/no-GPS situations on phones reliably).
+    let settled = false;
+    const handleSuccess = (pos: GeolocationPosition) => {
+      if (settled) return;
+      settled = true;
+      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      setGeo("granted");
+      const acc = Math.round(pos.coords.accuracy);
+      if (acc > 100) {
+        toast.message(`Location set (~${acc}m accuracy)`, {
+          description: "Move outdoors or near a window for a tighter fix.",
+        });
+      }
+    };
+    const handleError = (err: GeolocationPositionError) => {
+      if (settled) return;
+      settled = true;
+      setGeo("denied");
+      toast.error(
+        err.code === err.PERMISSION_DENIED
+          ? "Location permission denied"
+          : err.code === err.TIMEOUT
+            ? "Couldn't get a location fix — please try again outdoors"
+            : "Location unavailable"
+      );
+    };
+
+    navigator.geolocation.getCurrentPosition(handleSuccess, () => {
+      // High-accuracy failed/timed out — retry with low accuracy
+      navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 60000,
+      });
+    }, { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 });
   };
 
   const handleDetectedValue = (value: string) => {
