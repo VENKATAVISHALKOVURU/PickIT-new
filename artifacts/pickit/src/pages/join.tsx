@@ -110,36 +110,47 @@ function ScanInterface() {
   useEffect(() => {
     if (camera !== "granted") return;
     let detector: any = null;
-    if ("BarcodeDetector" in window) {
-      try {
-        detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
-      } catch {
-        detector = null;
-      }
-    }
+    let stopped = false;
 
-    const tick = async () => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      if (!video || !canvas || !video.videoWidth) {
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
-      if (detector) {
+    const init = async () => {
+      if ("BarcodeDetector" in window) {
         try {
-          const codes = await detector.detect(video);
-          if (codes && codes[0]?.rawValue) {
-            handleDetectedValue(codes[0].rawValue);
-            return;
-          }
+          detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
         } catch {
-          /* ignore */
+          detector = null;
         }
       }
+
+      const tick = async () => {
+        if (stopped) return;
+        const video = videoRef.current;
+        if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+          rafRef.current = requestAnimationFrame(tick);
+          return;
+        }
+        if (detector) {
+          try {
+            const codes = await detector.detect(video);
+            if (codes && codes.length > 0 && codes[0]?.rawValue) {
+              handleDetectedValue(codes[0].rawValue);
+              return;
+            }
+          } catch {
+            /* ignore detection errors */
+          }
+        }
+        if (!stopped) {
+          rafRef.current = requestAnimationFrame(tick);
+        }
+      };
+
       rafRef.current = requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+
+    init();
+
     return () => {
+      stopped = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [camera]);
@@ -238,7 +249,9 @@ function ScanInterface() {
                 <div className="px-4 py-3 border-t flex items-center justify-between text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                    {supportsScanning ? "Auto-detecting QR codes" : "QR auto-detect not supported, use manual entry"}
+                    {supportsScanning
+                      ? "Auto-detecting QR codes (Chrome/Edge)"
+                      : "Use manual code entry below — QR scanning requires Chrome/Edge on HTTPS"}
                   </span>
                   {camera === "granted" && (
                     <button onClick={() => { stopCamera(); setCamera("idle"); }} className="inline-flex items-center gap-1 hover:text-foreground">
@@ -366,6 +379,10 @@ function ScannerOverlay() {
 function JoinExistingShop({ shopCode }: { shopCode: string }) {
   const [, setLocation] = useLocation();
   const { user, isLoading: isAuthLoading } = useAuth();
+
+  if (!shopCode || shopCode.toUpperCase() === "SCAN") {
+    return null;
+  }
 
   const { data: shop, isLoading, isError } = useGetShopByCode(shopCode, {
     query: {

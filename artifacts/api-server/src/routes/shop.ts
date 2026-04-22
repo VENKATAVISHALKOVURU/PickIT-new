@@ -111,6 +111,29 @@ router.put("/shop/my/settings", requireAuth, requireRole("owner"), async (req, r
   });
 });
 
+router.get("/shop/pricing/:shopId", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.shopId) ? req.params.shopId[0] : req.params.shopId;
+  const shopId = parseInt(raw, 10);
+  if (isNaN(shopId)) {
+    res.status(400).json({ error: "Invalid shopId" });
+    return;
+  }
+
+  const [pricing] = await db.select().from(pricingConfigTable).where(eq(pricingConfigTable.shopId, shopId));
+  if (!pricing) {
+    res.json({ id: 0, shopId, bwPerPage: 2, colorPerPage: 5, minimumOrder: 10 });
+    return;
+  }
+
+  res.json({
+    id: pricing.id,
+    shopId: pricing.shopId,
+    bwPerPage: pricing.bwPerPage,
+    colorPerPage: pricing.colorPerPage,
+    minimumOrder: pricing.minimumOrder,
+  });
+});
+
 router.post("/shop/join/:shopCode", requireAuth, async (req, res): Promise<void> => {
   const shopCode = Array.isArray(req.params.shopCode) ? req.params.shopCode[0] : req.params.shopCode;
 

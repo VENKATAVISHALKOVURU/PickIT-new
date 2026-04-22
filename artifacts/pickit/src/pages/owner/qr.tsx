@@ -13,7 +13,7 @@ export default function OwnerQR() {
   const qrRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: shop, isLoading } = useGetMyShop({
+  const { data: shop, isLoading, isError } = useGetMyShop({
     query: { queryKey: getGetMyShopQueryKey() },
   });
 
@@ -37,6 +37,7 @@ export default function OwnerQR() {
 
   const buildPoster = (): Promise<string | null> =>
     new Promise((resolve) => {
+      setTimeout(() => {
       const qrCanvas = qrRef.current?.querySelector("canvas");
       if (!qrCanvas || !shop) return resolve(null);
 
@@ -104,6 +105,7 @@ export default function OwnerQR() {
       ctx.fillText("REQ · READY · RETRIEVE", W / 2, H - 60);
 
       resolve(c.toDataURL("image/png"));
+      }, 100);
     });
 
   const handleDownloadPoster = async () => {
@@ -143,7 +145,7 @@ export default function OwnerQR() {
     }
   };
 
-  if (isLoading || !shop) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold tracking-tight">Your unique QR code</h1>
@@ -156,6 +158,17 @@ export default function OwnerQR() {
             <Skeleton className="w-64 h-64" />
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (isError || !shop) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight text-destructive">Failed to load shop</h1>
+        <p className="text-muted-foreground">
+          Could not load your shop details. Please refresh the page or log out and back in.
+        </p>
       </div>
     );
   }

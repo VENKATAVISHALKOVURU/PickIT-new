@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useGetMe, useGetMyShopPricing, useCreateOrder, CreateOrderBodyColorMode } from "@workspace/api-client-react";
+import { useGetMe, useCreateOrder, CreateOrderBodyColorMode } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -34,11 +35,17 @@ export default function StudentUpload() {
 
   const { data: user, isLoading: isUserLoading } = useGetMe();
 
-  const { data: pricing, isLoading: isPricingLoading } = useGetMyShopPricing({
-    query: {
-      queryKey: ["student-shop-pricing", user?.shopId],
-      enabled: !!user?.shopId,
-    }
+  const { data: pricing } = useQuery({
+    queryKey: ["student-shop-pricing", user?.shopId],
+    enabled: !!user?.shopId,
+    queryFn: async () => {
+      const token = localStorage.getItem("pickit_token");
+      const res = await fetch(`/api/shop/pricing/${user!.shopId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return { bwPerPage: 2, colorPerPage: 5, minimumOrder: 10 };
+      return res.json();
+    },
   });
 
   const form = useForm<z.infer<typeof uploadSchema>>({
@@ -106,7 +113,7 @@ export default function StudentUpload() {
     toast.success("File added");
   };
 
-  if (isUserLoading || isPricingLoading) {
+  if (isUserLoading) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold tracking-tight">Upload Print Job</h1>

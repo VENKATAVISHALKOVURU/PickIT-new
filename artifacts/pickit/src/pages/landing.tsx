@@ -74,7 +74,7 @@ export default function Landing() {
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
         <div className="container mx-auto px-6 py-3 grid grid-cols-3 items-center">
         <div className="flex justify-start">
-          <BrandMark size={96} />
+          <BrandMark size={120} />
         </div>
         <nav className="hidden md:flex items-center justify-center gap-9 text-[15px] font-medium text-slate-700">
           <a href="#features" className="hover:text-[#1a1f4d] transition-colors">Features</a>
