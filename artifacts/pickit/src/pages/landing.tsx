@@ -126,55 +126,6 @@ export default function Landing() {
           </p>
 
           <div className="relative mt-5">
-            {/* Floating motion-graphic cards */}
-            <motion.div
-              className="hidden lg:flex absolute left-0 -top-2 pk-glass rounded-2xl px-4 py-3 items-center gap-3 pk-float z-10"
-              style={{ ["--r" as any]: "-6deg" }}
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              <span className="w-9 h-9 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center">
-                <Printer className="w-4 h-4" />
-              </span>
-              <div className="text-left leading-tight">
-                <p className="text-[11px] text-slate-500 font-medium">Order #PK-2847</p>
-                <p className="text-sm font-semibold text-[#1a1f4d]">Ready in 12 min</p>
-              </div>
-              <span className="ml-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600">
-                printing
-              </span>
-            </motion.div>
-
-            <motion.div
-              className="hidden lg:flex absolute right-0 top-32 pk-glass rounded-2xl px-4 py-3 items-center gap-3 pk-float-slow z-10"
-              style={{ ["--r" as any]: "5deg" }}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-            >
-              <span className="w-9 h-9 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4" />
-              </span>
-              <div className="text-left leading-tight">
-                <p className="text-[11px] text-slate-500 font-medium">Files secured</p>
-                <p className="text-sm font-semibold text-[#1a1f4d]">256-bit encryption</p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="hidden md:flex absolute left-4 -bottom-6 pk-glass rounded-2xl px-3.5 py-2.5 items-center gap-2.5 pk-float z-10"
-              style={{ ["--r" as any]: "3deg", animationDelay: "1.2s" } as any}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-            >
-              <span className="w-7 h-7 rounded-md bg-amber-500/15 text-amber-600 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5" />
-              </span>
-              <p className="text-xs font-medium text-[#1a1f4d]">UPI · GPay · PhonePe</p>
-            </motion.div>
-
             {/* Hero wordmark with shimmer + 3D tilt */}
             <motion.h1
               className="font-extrabold tracking-tight leading-[0.9] text-[88px] md:text-[160px] pk-tilt"
