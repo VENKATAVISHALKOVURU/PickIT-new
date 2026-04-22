@@ -260,31 +260,26 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="mt-8 overflow-hidden relative [mask-image:linear-gradient(to_right,transparent,#000_10%,#000_90%,transparent)]">
-            <motion.div
-              className="flex gap-12 whitespace-nowrap"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-            >
+          <div className="pk-marquee mt-8 overflow-hidden relative [mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)]">
+            <div className="pk-marquee-track flex whitespace-nowrap">
               {[...Array(2)].map((_, copy) => (
-                <div key={copy} className="flex gap-12 shrink-0">
+                <div key={copy} className="flex shrink-0 items-center">
                   {[
-                    "Campus Print Hub",
-                    "Student Xerox Point",
-                    "QuickPrint Corner",
-                    "PrintWave Studios",
-                    "InkBox Express",
-                    "Page&Co",
-                    "ScholarPress",
-                    "BluePrint Cafe",
-                  ].map((name) => (
-                    <span key={`${copy}-${name}`} className="text-slate-400 font-semibold tracking-wide text-lg">
-                      {name}
+                    "📄 Print PDFs, Docs, PPTs in 1 click",
+                    "📍 Find nearest print shop instantly",
+                    "🔒 Secure file uploads",
+                    "🚚 REQUEST · READY · RETRIEVE",
+                  ].map((item, i) => (
+                    <span key={`${copy}-${i}`} className="flex items-center">
+                      <span className="px-6 md:px-10 text-slate-600 font-medium tracking-wide text-sm md:text-base">
+                        {item}
+                      </span>
+                      <span className="text-slate-300 select-none">|</span>
                     </span>
                   ))}
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
       </main>

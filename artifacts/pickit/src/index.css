@@ -352,3 +352,15 @@
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
 }
+
+@keyframes pk-marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.pk-marquee-track {
+  animation: pk-marquee-scroll 35s linear infinite;
+  width: max-content;
+}
+.pk-marquee:hover .pk-marquee-track {
+  animation-play-state: paused;
+}
