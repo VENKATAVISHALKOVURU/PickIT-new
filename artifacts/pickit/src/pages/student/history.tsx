@@ -1,9 +1,11 @@
 import { useGetStudentOrders, getGetStudentOrdersQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { FileText, CheckCircle2 } from "lucide-react";
+import { FileText, CheckCircle2, RotateCcw, Printer } from "lucide-react";
+import { Link } from "wouter";
 
 const formatINR = (value: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
@@ -50,27 +52,42 @@ export default function StudentHistory() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
               >
-                <Card className="opacity-80 hover:opacity-100 transition-opacity">
+                <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 w-full sm:w-auto">
-                      <div className="bg-primary/10 p-3 rounded-full hidden sm:block">
+                    <div className="flex items-center gap-4 w-full sm:w-auto min-w-0">
+                      <div className="bg-primary/10 p-3 rounded-full hidden sm:block shrink-0">
                         <CheckCircle2 className="w-6 h-6 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{order.fileName}</h3>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-lg truncate" title={order.fileName}>{order.fileName}</h3>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(order.createdAt), "MMM d, yyyy 'at' h:mm a")}
                         </p>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center justify-between w-full sm:w-auto sm:justify-end gap-6">
+
+                    <div className="flex items-center justify-between w-full sm:w-auto sm:justify-end gap-4 sm:gap-6">
                       <div className="text-sm text-muted-foreground text-right">
-                        {order.pages} pgs • {order.colorMode.toUpperCase()}
+                        {order.pages} pgs · {order.copies ?? 1}× · {order.colorMode.toUpperCase()}
                       </div>
-                      <div className="font-bold text-lg">
+                      <div className="font-bold text-lg whitespace-nowrap">
                         {formatINR(order.price)}
                       </div>
+                      <Button asChild size="sm" variant="default" className="gap-1.5 shrink-0" data-testid={`button-reprint-${order.id}`}>
+                        <Link
+                          href={`/student/upload?reprint=${encodeURIComponent(order.id)}` +
+                            `&fileUrl=${encodeURIComponent(order.fileUrl)}` +
+                            `&fileName=${encodeURIComponent(order.fileName)}` +
+                            `&pages=${order.pages}` +
+                            `&copies=${order.copies ?? 1}` +
+                            `&colorMode=${order.colorMode}` +
+                            (order.note ? `&note=${encodeURIComponent(order.note)}` : "")
+                          }
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Reprint
+                        </Link>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

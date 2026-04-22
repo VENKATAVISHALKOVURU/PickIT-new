@@ -4,7 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useGetMe, useCreateOrder, CreateOrderBodyColorMode } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
+import { Badge } from "@/components/ui/badge";
+import { RotateCcw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -29,6 +31,9 @@ const formatINR = (value: number) =>
 
 export default function StudentUpload() {
   const [, setLocation] = useLocation();
+  const search = useSearch();
+  const params = useMemo(() => new URLSearchParams(search), [search]);
+  const isReprint = !!params.get("reprint");
   const [step, setStep] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -51,14 +56,22 @@ export default function StudentUpload() {
   const form = useForm<z.infer<typeof uploadSchema>>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
-      fileUrl: "",
-      fileName: "",
-      pages: 1,
-      colorMode: "bw",
-      copies: 1,
-      note: "",
+      fileUrl: params.get("fileUrl") ?? "",
+      fileName: params.get("fileName") ?? "",
+      pages: Number(params.get("pages")) || 1,
+      colorMode: (params.get("colorMode") === "color" ? "color" : "bw"),
+      copies: Number(params.get("copies")) || 1,
+      note: params.get("note") ?? "",
     }
   });
+
+  useEffect(() => {
+    if (isReprint) {
+      setStep(1);
+      toast.success("Reprint loaded — review and place order");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const watchPages = form.watch("pages");
   const watchColorMode = form.watch("colorMode");
@@ -139,7 +152,15 @@ export default function StudentUpload() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-primary">Upload Print Job</h1>
+      <div className="flex items-center gap-3 flex-wrap">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Upload Print Job</h1>
+        {isReprint && (
+          <Badge variant="secondary" className="gap-1.5" data-testid="badge-reprint">
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reprint from history
+          </Badge>
+        )}
+      </div>
       <div className="flex flex-wrap gap-2">
         {["Upload File", "Paper Configuration", "Processing", "Queue", "PickIT✓"].map((label, index) => (
           <div key={label} className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${step >= index ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground"}`}>
