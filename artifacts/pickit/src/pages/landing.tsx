@@ -204,20 +204,101 @@ function SiteNav() {
   );
 }
 
+type DemoOrder = {
+  id: string;
+  name: string;
+  pages: number;
+  copies: number;
+  mode: string;
+  color: "emerald" | "blue" | "violet";
+  pricePerPage: number;
+  msPerPage: number;
+};
+
+const DEMO_ORDERS: DemoOrder[] = [
+  { id: "PK-2847", name: "Thesis_Final.pdf", pages: 84, copies: 2, mode: "B/W", color: "emerald", pricePerPage: 2, msPerPage: 220 },
+  { id: "PK-2846", name: "Lab_Report.docx", pages: 12, copies: 1, mode: "Color", pricePerPage: 8, color: "blue", msPerPage: 380 },
+  { id: "PK-2845", name: "Posters_A3.pdf", pages: 4, copies: 1, mode: "A3 Color", pricePerPage: 30, color: "violet", msPerPage: 600 },
+];
+
+const COLOR_MAP: Record<DemoOrder["color"], { bg: string; text: string; ring: string; border: string; softBg: string }> = {
+  emerald: { bg: "bg-emerald-100", text: "text-emerald-600", ring: "ring-emerald-400/40", border: "border-emerald-200", softBg: "bg-emerald-50/60" },
+  blue: { bg: "bg-blue-100", text: "text-blue-600", ring: "ring-blue-400/40", border: "border-blue-200", softBg: "bg-blue-50/60" },
+  violet: { bg: "bg-violet-100", text: "text-violet-600", ring: "ring-violet-400/40", border: "border-violet-200", softBg: "bg-violet-50/60" },
+};
+
 function AppShowcase3D() {
+  const [selectedId, setSelectedId] = useState<string>(DEMO_ORDERS[0].id);
+  const [pagesDone, setPagesDone] = useState(0);
+  const [revenue, setRevenue] = useState(2840);
+  const [completed, setCompleted] = useState(47);
+  const [activeCount, setActiveCount] = useState(3);
+  const [sheets, setSheets] = useState<number[]>([]);
+  const sheetIdRef = useRef(0);
+  const paused = useRef(false);
+
+  const selected = DEMO_ORDERS.find((o) => o.id === selectedId)!;
+  const totalPages = selected.pages * selected.copies;
+
+  // Reset progress when user switches order
+  useEffect(() => {
+    setPagesDone(0);
+    setSheets([]);
+  }, [selectedId]);
+
+  // Live print loop
+  useEffect(() => {
+    const tick = setInterval(() => {
+      if (paused.current) return;
+      setPagesDone((p) => {
+        if (p + 1 >= totalPages) {
+          // job complete — bump revenue, advance to next order
+          setRevenue((r) => r + totalPages * selected.pricePerPage);
+          setCompleted((c) => c + 1);
+          const idx = DEMO_ORDERS.findIndex((o) => o.id === selectedId);
+          const next = DEMO_ORDERS[(idx + 1) % DEMO_ORDERS.length];
+          setTimeout(() => setSelectedId(next.id), 400);
+          return totalPages;
+        }
+        // emit a paper sheet animation
+        const id = ++sheetIdRef.current;
+        setSheets((s) => [...s, id].slice(-5));
+        setTimeout(() => setSheets((s) => s.filter((x) => x !== id)), 1400);
+        return p + 1;
+      });
+    }, selected.msPerPage);
+    return () => clearInterval(tick);
+  }, [selectedId, totalPages, selected.msPerPage, selected.pricePerPage]);
+
+  // Occasionally simulate a new order joining the queue
+  useEffect(() => {
+    const t = setInterval(() => setActiveCount((c) => 3 + Math.floor(Math.random() * 4)), 4200);
+    return () => clearInterval(t);
+  }, []);
+
+  const progress = Math.min(1, pagesDone / totalPages);
+  const remainingSec = Math.max(1, Math.ceil((totalPages - pagesDone) * (selected.msPerPage / 1000)));
+  const etaLabel =
+    remainingSec >= 60
+      ? `${Math.floor(remainingSec / 60)}m ${remainingSec % 60}s`
+      : `${remainingSec}s`;
+  const liveCost = pagesDone * selected.pricePerPage;
+  const c = COLOR_MAP[selected.color];
+
   return (
     <div
       className="relative mx-auto w-full max-w-[1080px] [perspective:2200px]"
       data-testid="hero-app-showcase"
+      onMouseEnter={() => (paused.current = true)}
+      onMouseLeave={() => (paused.current = false)}
     >
-      {/* Ambient color wash behind the device */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[78%] h-[80%] rounded-[60px] bg-gradient-to-br from-blue-400/25 via-emerald-300/15 to-violet-400/20 blur-3xl" />
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 40, rotateX: 28 }}
-        whileInView={{ opacity: 1, y: 0, rotateX: 14 }}
+        initial={{ opacity: 0, y: 40, rotateX: 22 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 10 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         className="relative [transform-style:preserve-3d]"
@@ -232,11 +313,14 @@ function AppShowcase3D() {
             <ShieldCheck className="h-3 w-3 text-emerald-500" />
             pickit.app/student/orders
           </div>
+          <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            LIVE DEMO
+          </span>
         </div>
 
         {/* Dashboard surface */}
         <div className="relative rounded-b-2xl bg-white border border-slate-200 shadow-[0_60px_120px_-40px_rgba(15,23,42,0.45),0_30px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden">
-          {/* Top toolbar */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/60">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#1a1f4d] to-[#2b3580] flex items-center justify-center text-white">
@@ -244,101 +328,148 @@ function AppShowcase3D() {
               </div>
               <div>
                 <p className="text-[13px] font-semibold text-[#1a1f4d] leading-tight">Print Hub</p>
-                <p className="text-[10px] text-slate-400">Live queue</p>
+                <p className="text-[10px] text-slate-400">{completed} jobs completed today</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                3 active
+                {activeCount} active
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
-                ₹2,840 today
+              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold tabular-nums">
+                ₹{revenue.toLocaleString("en-IN")} today
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-12 gap-4 p-5">
-            {/* Left rail — order list */}
+            {/* Order list — clickable */}
             <div className="col-span-12 md:col-span-5 space-y-2.5">
-              {[
-                { id: "PK-2847", name: "Thesis_Final.pdf", pages: 84, status: "Printing", color: "emerald", price: "₹168", active: true },
-                { id: "PK-2846", name: "Lab_Report.docx", pages: 12, status: "Queued", color: "blue", price: "₹24" },
-                { id: "PK-2845", name: "Posters_A3.pdf", pages: 4, status: "Ready", color: "violet", price: "₹120" },
-              ].map((o, i) => (
-                <motion.div
-                  key={o.id}
-                  initial={{ opacity: 0, x: -16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 + i * 0.12, duration: 0.5 }}
-                  className={`flex items-center gap-3 p-3 rounded-xl border ${o.active ? "border-emerald-200 bg-emerald-50/50" : "border-slate-100 bg-white"}`}
-                >
-                  <div className={`h-9 w-9 shrink-0 rounded-lg bg-${o.color}-100 text-${o.color}-600 flex items-center justify-center`}>
-                    <FileText className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-semibold text-slate-800 truncate">{o.name}</p>
-                    <p className="text-[10px] text-slate-400">#{o.id} · {o.pages} pages</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[12px] font-bold text-[#1a1f4d]">{o.price}</p>
-                    <p className={`text-[10px] font-semibold text-${o.color}-600`}>{o.status}</p>
-                  </div>
-                </motion.div>
-              ))}
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1">
+                Queue · click to switch
+              </p>
+              {DEMO_ORDERS.map((o, i) => {
+                const isActive = o.id === selectedId;
+                const oc = COLOR_MAP[o.color];
+                return (
+                  <motion.button
+                    key={o.id}
+                    type="button"
+                    onClick={() => setSelectedId(o.id)}
+                    initial={{ opacity: 0, x: -16 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    whileHover={{ scale: 1.015 }}
+                    whileTap={{ scale: 0.985 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.45 }}
+                    className={`w-full text-left flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      isActive
+                        ? `${oc.border} ${oc.softBg} ring-2 ${oc.ring}`
+                        : "border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/60"
+                    }`}
+                    data-testid={`demo-order-${o.id}`}
+                  >
+                    <div className={`h-9 w-9 shrink-0 rounded-lg ${oc.bg} ${oc.text} flex items-center justify-center`}>
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-semibold text-slate-800 truncate">{o.name}</p>
+                      <p className="text-[10px] text-slate-400">
+                        #{o.id} · {o.pages} pg · {o.mode}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[12px] font-bold text-[#1a1f4d] tabular-nums">
+                        ₹{(o.pages * o.copies * o.pricePerPage).toLocaleString("en-IN")}
+                      </p>
+                      <p className={`text-[10px] font-semibold ${isActive ? "text-emerald-600" : "text-slate-400"}`}>
+                        {isActive ? "Printing…" : "Queued"}
+                      </p>
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
 
-            {/* Right rail — live order */}
+            {/* Live job panel */}
             <div className="col-span-12 md:col-span-7 rounded-2xl border border-slate-100 bg-gradient-to-br from-[#0f1438] via-[#1a1f4d] to-[#2b3580] text-white p-5 relative overflow-hidden">
               <div className="absolute inset-0 opacity-30 [background:radial-gradient(circle_at_20%_-10%,rgba(16,185,129,0.45),transparent_45%),radial-gradient(circle_at_120%_120%,rgba(59,130,246,0.45),transparent_50%)]" />
               <div className="relative">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.25em] text-emerald-300/80 font-semibold">Now printing</p>
-                    <p className="mt-1 text-base sm:text-lg font-bold">Thesis_Final.pdf</p>
-                    <p className="text-[11px] text-blue-200/80">Order #PK-2847 · 84 pages · B/W · 2 copies</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-emerald-300/80 font-semibold flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Now printing
+                    </p>
+                    <p className="mt-1 text-base sm:text-lg font-bold truncate">{selected.name}</p>
+                    <p className="text-[11px] text-blue-200/80">
+                      Order #{selected.id} · {selected.pages} pages · {selected.mode} · {selected.copies} {selected.copies === 1 ? "copy" : "copies"}
+                    </p>
                   </div>
-                  <span className="font-mono text-[10px] px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
-                    ETA 12 min
+                  <span className="shrink-0 font-mono text-[10px] px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 tabular-nums">
+                    ETA {etaLabel}
                   </span>
                 </div>
 
-                {/* Progress bar */}
-                <div className="mt-5">
+                {/* Mini printer + paper eject */}
+                <div className="mt-4 relative h-[68px]">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[58%] h-[26px] rounded-t-lg bg-slate-200/90 border border-slate-300 flex items-center justify-center">
+                    <div className="w-[80%] h-1 rounded-full bg-slate-900/80" />
+                  </div>
+                  <AnimatePresence>
+                    {sheets.map((id) => (
+                      <motion.div
+                        key={id}
+                        initial={{ y: 0, opacity: 0, scale: 0.9 }}
+                        animate={{ y: -28, opacity: 1, scale: 1 }}
+                        exit={{ y: -56, opacity: 0 }}
+                        transition={{ duration: 1.4, ease: "easeOut" }}
+                        className="absolute left-1/2 -translate-x-1/2 top-0 w-[34%] h-[44px] rounded-sm bg-white border border-slate-300 shadow-[0_8px_18px_-6px_rgba(0,0,0,0.35)] origin-bottom"
+                      >
+                        <div className="p-1 space-y-0.5">
+                          <div className="h-[2px] w-3/4 bg-slate-300 rounded" />
+                          <div className="h-[2px] w-full bg-slate-200 rounded" />
+                          <div className="h-[2px] w-5/6 bg-slate-200 rounded" />
+                          <div className="h-[2px] w-2/3 bg-slate-200 rounded" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[34px] w-[64%] h-[26px] rounded-b-lg bg-gradient-to-b from-[#2b3580] to-[#0f1438] border border-[#0a0e2a] flex items-center justify-between px-2.5">
+                    <div className="flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)] animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                    </div>
+                    <span className="font-mono text-[9px] text-emerald-300 tracking-widest tabular-nums">
+                      {pagesDone.toString().padStart(2, "0")} / {totalPages}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Live progress */}
+                <div className="mt-4">
                   <div className="flex justify-between text-[10px] text-blue-200/70 mb-1.5">
-                    <span>Pending</span>
-                    <span>Accepted</span>
-                    <span className="text-emerald-300 font-semibold">Printing</span>
-                    <span>Ready</span>
+                    <span className={progress > 0 ? "text-emerald-300 font-semibold" : ""}>Accepted</span>
+                    <span className={progress > 0.05 ? "text-emerald-300 font-semibold" : ""}>Printing</span>
+                    <span className={progress > 0.85 ? "text-emerald-300 font-semibold" : ""}>Ready</span>
+                    <span className={progress >= 1 ? "text-emerald-300 font-semibold" : ""}>Picked up</span>
                   </div>
                   <div className="relative h-1.5 rounded-full bg-white/10 overflow-hidden">
                     <motion.div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full"
-                      initial={{ width: "0%" }}
-                      whileInView={{ width: "68%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.8, duration: 1.6, ease: "easeOut" }}
+                      animate={{ width: `${progress * 100}%` }}
+                      transition={{ duration: selected.msPerPage / 1000, ease: "linear" }}
                     />
                   </div>
                 </div>
 
-                {/* Mini stats */}
-                <div className="mt-5 grid grid-cols-3 gap-2">
-                  {[
-                    { l: "Pages done", v: "57 / 84", c: "text-emerald-300" },
-                    { l: "Cost", v: "₹168", c: "text-blue-200" },
-                    { l: "Saved time", v: "18 min", c: "text-amber-300" },
-                  ].map((s) => (
-                    <div key={s.l} className="rounded-lg bg-white/5 border border-white/10 p-2.5">
-                      <p className="text-[9px] uppercase tracking-wider text-blue-200/60">{s.l}</p>
-                      <p className={`text-sm font-bold ${s.c}`}>{s.v}</p>
-                    </div>
-                  ))}
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <Stat label="Pages done" value={`${pagesDone} / ${totalPages}`} cls="text-emerald-300" />
+                  <Stat label="Live cost" value={`₹${liveCost.toLocaleString("en-IN")}`} cls="text-blue-200" />
+                  <Stat label="Time left" value={etaLabel} cls="text-amber-300" />
                 </div>
 
-                {/* Payment row */}
-                <div className="mt-4 flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-3 py-2">
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-3 py-2">
                   <div className="flex items-center gap-2 text-[11px] text-blue-100">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                     Paid via UPI · GPay
@@ -350,19 +481,19 @@ function AppShowcase3D() {
           </div>
         </div>
 
-        {/* Floating accent chips */}
+        {/* Floating accent chips driven by live state */}
         <motion.div
           className="hidden md:flex absolute -left-10 top-24 items-center gap-2 rounded-2xl bg-white/90 backdrop-blur-md border border-white shadow-[0_24px_60px_-20px_rgba(15,23,42,0.3)] px-3.5 py-2.5"
           style={{ transform: "translateZ(80px)" }}
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-          <span className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+          <span className={`h-8 w-8 rounded-lg ${c.bg} ${c.text} flex items-center justify-center`}>
             <Sparkles className="h-4 w-4" />
           </span>
           <div className="leading-tight">
-            <p className="text-[10px] text-slate-400 font-medium">New order</p>
-            <p className="text-[12px] font-semibold text-[#1a1f4d]">Lab_Report.docx</p>
+            <p className="text-[10px] text-slate-400 font-medium">Now printing</p>
+            <p className="text-[12px] font-semibold text-[#1a1f4d] truncate max-w-[140px]">{selected.name}</p>
           </div>
         </motion.div>
 
@@ -376,11 +507,20 @@ function AppShowcase3D() {
             <Clock className="h-4 w-4" />
           </span>
           <div className="leading-tight">
-            <p className="text-[10px] text-slate-400 font-medium">Avg pickup</p>
-            <p className="text-[12px] font-semibold text-[#1a1f4d]">5 min faster</p>
+            <p className="text-[10px] text-slate-400 font-medium">Time left</p>
+            <p className="text-[12px] font-semibold text-[#1a1f4d] tabular-nums">{etaLabel}</p>
           </div>
         </motion.div>
       </motion.div>
+    </div>
+  );
+}
+
+function Stat({ label, value, cls }: { label: string; value: string; cls: string }) {
+  return (
+    <div className="rounded-lg bg-white/5 border border-white/10 p-2.5">
+      <p className="text-[9px] uppercase tracking-wider text-blue-200/60">{label}</p>
+      <p className={`text-sm font-bold tabular-nums ${cls}`}>{value}</p>
     </div>
   );
 }
