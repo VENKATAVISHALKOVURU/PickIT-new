@@ -1,18 +1,19 @@
 import { useGetStudentOrders, getGetStudentOrdersQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
-import { FileText, Clock, Printer, CheckCircle2 } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { FileText, Clock, Printer, CheckCircle2, RadioTower } from "lucide-react";
 
 const formatINR = (value: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
 
 export default function StudentOrders() {
-  const { data: orders, isLoading } = useGetStudentOrders({
+  const { data: orders, isLoading, dataUpdatedAt } = useGetStudentOrders({
     query: {
-      queryKey: getGetStudentOrdersQueryKey()
+      queryKey: getGetStudentOrdersQueryKey(),
+      refetchInterval: 4000,
+      refetchOnWindowFocus: true,
     }
   });
 
@@ -60,7 +61,13 @@ export default function StudentOrders() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-primary">Active Orders</h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Active Orders</h1>
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100" data-testid="live-indicator">
+          <RadioTower className="h-3 w-3" />
+          Live · updated {dataUpdatedAt ? formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true }) : "just now"}
+        </span>
+      </div>
       
       {activeOrders.length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 border-dashed">

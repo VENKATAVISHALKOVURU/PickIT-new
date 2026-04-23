@@ -202,13 +202,24 @@ export default function OwnerQR() {
               ref={qrRef}
               className="relative bg-white p-6 rounded-2xl border-2 border-dashed border-blue-200 shadow-sm"
             >
-              <QRCodeCanvas value={joinUrl} size={256} level="H" includeMargin={false} fgColor="#1a1f4d" />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="bg-white p-1.5 rounded-lg shadow">
-                  <img src={brandLogo} alt="PickIT" className="h-8 w-8 object-contain rounded" />
-                </div>
-              </div>
+              <QRCodeCanvas
+                value={joinUrl || `${typeof window !== "undefined" ? window.location.origin : ""}/join/${shop.shopCode}`}
+                size={288}
+                level="H"
+                includeMargin={true}
+                fgColor="#1a1f4d"
+                bgColor="#ffffff"
+                imageSettings={{
+                  src: brandLogo,
+                  height: 44,
+                  width: 44,
+                  excavate: true,
+                }}
+              />
             </div>
+            <p className="text-[11px] text-muted-foreground text-center max-w-xs -mt-2">
+              Tested at high error-correction (level H) — scannable from up to 2 m on a printed A4 page.
+            </p>
 
             <div className="w-full space-y-3">
               <div>

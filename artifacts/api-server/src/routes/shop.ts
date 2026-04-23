@@ -1,10 +1,33 @@
 import { Router, type IRouter } from "express";
 import { db, shopsTable, pricingConfigTable, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and, isNotNull } from "drizzle-orm";
 import { UpdateMyShopPricingBody, UpdateMyShopSettingsBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth";
 
 const router: IRouter = Router();
+
+const serializeShop = (shop: any) => ({
+  id: shop.id,
+  ownerId: shop.ownerId,
+  name: shop.name,
+  shopCode: shop.shopCode,
+  address: shop.address ?? null,
+  latitude: shop.latitude ?? null,
+  longitude: shop.longitude ?? null,
+  isOpen: shop.isOpen,
+});
+
+// Haversine distance in metres
+function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
 
 router.get("/shop/my", requireAuth, requireRole("owner"), async (req, res): Promise<void> => {
   const [shop] = await db.select().from(shopsTable).where(eq(shopsTable.ownerId, req.user!.userId));
@@ -12,15 +35,35 @@ router.get("/shop/my", requireAuth, requireRole("owner"), async (req, res): Prom
     res.status(404).json({ error: "Shop not found" });
     return;
   }
+  res.json(serializeShop(shop));
+});
 
-  res.json({
-    id: shop.id,
-    ownerId: shop.ownerId,
-    name: shop.name,
-    shopCode: shop.shopCode,
-    address: shop.address ?? null,
-    isOpen: shop.isOpen,
+router.get("/shop/nearby", async (req, res): Promise<void> => {
+  const lat = parseFloat(String(req.query.lat ?? ""));
+  const lng = parseFloat(String(req.query.lng ?? ""));
+  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? "10"), 10) || 10));
+  const hasCoords = !isNaN(lat) && !isNaN(lng);
+
+  const rows = await db
+    .select()
+    .from(shopsTable)
+    .where(and(isNotNull(shopsTable.latitude), isNotNull(shopsTable.longitude)));
+
+  const items = rows.map((s) => {
+    const distance = hasCoords && s.latitude != null && s.longitude != null
+      ? distanceMeters(lat, lng, s.latitude, s.longitude)
+      : null;
+    return { ...serializeShop(s), distanceMeters: distance };
   });
+
+  items.sort((a, b) => {
+    if (a.distanceMeters == null && b.distanceMeters == null) return 0;
+    if (a.distanceMeters == null) return 1;
+    if (b.distanceMeters == null) return -1;
+    return a.distanceMeters - b.distanceMeters;
+  });
+
+  res.json({ shops: items.slice(0, limit), origin: hasCoords ? { lat, lng } : null });
 });
 
 router.get("/shop/my/pricing", requireAuth, requireRole("owner"), async (req, res): Promise<void> => {
@@ -94,6 +137,13 @@ router.put("/shop/my/settings", requireAuth, requireRole("owner"), async (req, r
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
   if (parsed.data.address !== undefined) updateData.address = parsed.data.address;
   if (parsed.data.isOpen !== undefined) updateData.isOpen = parsed.data.isOpen;
+  // Accept latitude/longitude (not in OpenAPI schema yet) — passed through raw body
+  const rawLat = (req.body as any)?.latitude;
+  const rawLng = (req.body as any)?.longitude;
+  if (typeof rawLat === "number") updateData.latitude = rawLat;
+  if (typeof rawLng === "number") updateData.longitude = rawLng;
+  if (rawLat === null) updateData.latitude = null;
+  if (rawLng === null) updateData.longitude = null;
 
   const [updated] = await db
     .update(shopsTable)
@@ -101,14 +151,7 @@ router.put("/shop/my/settings", requireAuth, requireRole("owner"), async (req, r
     .where(eq(shopsTable.id, shop.id))
     .returning();
 
-  res.json({
-    id: updated.id,
-    ownerId: updated.ownerId,
-    name: updated.name,
-    shopCode: updated.shopCode,
-    address: updated.address ?? null,
-    isOpen: updated.isOpen,
-  });
+  res.json(serializeShop(updated));
 });
 
 router.get("/shop/pricing/:shopId", requireAuth, async (req, res): Promise<void> => {
@@ -148,14 +191,7 @@ router.post("/shop/join/:shopCode", requireAuth, async (req, res): Promise<void>
     .set({ shopId: shop.id })
     .where(eq(usersTable.id, req.user!.userId));
 
-  res.json({
-    id: shop.id,
-    ownerId: shop.ownerId,
-    name: shop.name,
-    shopCode: shop.shopCode,
-    address: shop.address ?? null,
-    isOpen: shop.isOpen,
-  });
+  res.json(serializeShop(shop));
 });
 
 router.get("/shop/info/:shopCode", async (req, res): Promise<void> => {
@@ -167,14 +203,7 @@ router.get("/shop/info/:shopCode", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json({
-    id: shop.id,
-    ownerId: shop.ownerId,
-    name: shop.name,
-    shopCode: shop.shopCode,
-    address: shop.address ?? null,
-    isOpen: shop.isOpen,
-  });
+  res.json(serializeShop(shop));
 });
 
 export default router;

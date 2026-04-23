@@ -8,7 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { FileText, Printer, CheckCircle2, Copy } from "lucide-react";
+import { FileText, Printer, CheckCircle2, Copy, RadioTower } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 const formatINR = (value: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
@@ -17,9 +18,11 @@ export default function OwnerOrders() {
   const queryClient = useQueryClient();
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
-  const { data: orders, isLoading } = useGetShopOrders({
+  const { data: orders, isLoading, dataUpdatedAt } = useGetShopOrders({
     query: {
-      queryKey: getGetShopOrdersQueryKey()
+      queryKey: getGetShopOrdersQueryKey(),
+      refetchInterval: 4000,
+      refetchOnWindowFocus: true,
     }
   });
 
@@ -78,7 +81,13 @@ export default function OwnerOrders() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-primary">Manage Orders</h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Manage Orders</h1>
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100" data-testid="live-indicator">
+          <RadioTower className="h-3 w-3" />
+          Live · updated {dataUpdatedAt ? formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true }) : "just now"}
+        </span>
+      </div>
       
       {activeOrders.length === 0 && doneOrders.length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 border-dashed">

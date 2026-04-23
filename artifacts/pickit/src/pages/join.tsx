@@ -31,27 +31,63 @@ function extractShopCode(value: string): string | null {
   }
 }
 
+type NearbyShop = {
+  id: number;
+  name: string;
+  shopCode: string;
+  address: string | null;
+  isOpen: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  distanceMeters: number | null;
+};
+
+function formatDistance(m: number | null): string {
+  if (m == null) return "—";
+  if (m < 950) return `${Math.round(m)} m`;
+  return `${(m / 1000).toFixed(m < 9500 ? 1 : 0)} km`;
+}
+
 function ScanInterface() {
   const [, setLocation] = useLocation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const watchIdRef = useRef<number | null>(null);
   const [camera, setCamera] = useState<Permission>("idle");
   const [geo, setGeo] = useState<Permission>("idle");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
   const [manual, setManual] = useState("");
   const [search, setSearch] = useState("");
+  const [nearbyShops, setNearbyShops] = useState<NearbyShop[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
 
-  const nearby = useMemo(() => {
-    const base = [
-      { name: "Campus Print Hub", address: "Main Road, Block A", shopCode: "CPH123", distance: "120 m" },
-      { name: "Student Xerox Point", address: "Library Street, Gate 2", shopCode: "SXP456", distance: "340 m" },
-      { name: "QuickPrint Corner", address: "Hostel Lane, Near Canteen", shopCode: "QPC789", distance: "510 m" },
-    ];
-    if (!search.trim()) return base;
-    return base.filter((s) => `${s.name} ${s.address}`.toLowerCase().includes(search.toLowerCase()));
-  }, [search]);
+  // Fetch real nearby shops whenever coords change (only when geo granted)
+  useEffect(() => {
+    if (geo !== "granted" || !coords) return;
+    let cancelled = false;
+    const ctrl = new AbortController();
+    setNearbyLoading(true);
+    fetch(`/api/shop/nearby?lat=${coords.lat}&lng=${coords.lng}&limit=15`, { signal: ctrl.signal })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        setNearbyShops(Array.isArray(data?.shops) ? data.shops : []);
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setNearbyLoading(false));
+    return () => {
+      cancelled = true;
+      ctrl.abort();
+    };
+  }, [geo, coords?.lat, coords?.lng]);
+
+  const filteredNearby = useMemo(() => {
+    if (!search.trim()) return nearbyShops;
+    const q = search.toLowerCase();
+    return nearbyShops.filter((s) => `${s.name} ${s.address ?? ""}`.toLowerCase().includes(q));
+  }, [search, nearbyShops]);
 
   const stopCamera = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -76,6 +112,23 @@ function ScanInterface() {
     }
   };
 
+  const startWatch = () => {
+    if (watchIdRef.current != null) return;
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCoords({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+      },
+      () => {
+        /* silent — we already have a fix */
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  };
+
   const requestGeo = () => {
     if (!navigator.geolocation) {
       setGeo("denied");
@@ -84,14 +137,17 @@ function ScanInterface() {
     }
     setGeo("prompting");
 
-    // Try a high-accuracy fix first; fall back to a low-accuracy fix if it
-    // takes too long (handles indoor/no-GPS situations on phones reliably).
     let settled = false;
     const handleSuccess = (pos: GeolocationPosition) => {
       if (settled) return;
       settled = true;
-      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      setCoords({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
+      });
       setGeo("granted");
+      startWatch();
       const acc = Math.round(pos.coords.accuracy);
       if (acc > 100) {
         toast.message(`Location set (~${acc}m accuracy)`, {
@@ -112,15 +168,28 @@ function ScanInterface() {
       );
     };
 
-    navigator.geolocation.getCurrentPosition(handleSuccess, () => {
-      // High-accuracy failed/timed out — retry with low accuracy
-      navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
-        enableHighAccuracy: false,
-        timeout: 8000,
-        maximumAge: 60000,
-      });
-    }, { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 });
+    navigator.geolocation.getCurrentPosition(
+      handleSuccess,
+      () => {
+        navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+          enableHighAccuracy: false,
+          timeout: 8000,
+          maximumAge: 60000,
+        });
+      },
+      { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
+    );
   };
+
+  // Stop watching on unmount
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current != null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, []);
 
   const handleDetectedValue = (value: string) => {
     const code = extractShopCode(value);
@@ -303,49 +372,81 @@ function ScanInterface() {
                 </div>
               </form>
 
-              <div className="rounded-2xl border bg-white p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Search className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium">Nearby shops</span>
+              {geo === "granted" ? (
+                <div className="rounded-2xl border bg-white p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Search className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium">Nearby shops</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Live
+                      </span>
+                    </div>
+                    {coords && (
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        ±{Math.round(coords.accuracy)}m
+                      </span>
+                    )}
                   </div>
-                  {coords && (
-                    <span className="text-xs text-muted-foreground">
-                      {coords.lat.toFixed(3)}, {coords.lng.toFixed(3)}
-                    </span>
-                  )}
-                </div>
-                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search shop name or address" />
-                {geo !== "granted" ? (
-                  <p className="text-sm text-muted-foreground">
-                    Share your location to see real distances. Showing campus shops by default.
-                  </p>
-                ) : null}
-                <div className="space-y-2">
-                  {nearby.map((s) => (
-                    <button
-                      key={s.shopCode}
-                      onClick={() => setLocation(`/join/${s.shopCode}`)}
-                      className="w-full rounded-xl border p-3 text-left hover:border-blue-500 hover:bg-blue-50/40 transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-foreground">{s.name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {s.address}
-                          </p>
-                        </div>
-                        <span className="text-xs rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-1">
-                          {geo === "granted" ? s.distance : "Connect"}
-                        </span>
+                  <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search shop name or address" />
+                  <div className="space-y-2" data-testid="nearby-shops-list">
+                    {nearbyLoading && filteredNearby.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">Finding shops near you…</p>
+                    ) : filteredNearby.length === 0 ? (
+                      <div className="text-center py-6 space-y-1">
+                        <p className="text-sm font-medium text-slate-700">No shops in your area yet</p>
+                        <p className="text-xs text-muted-foreground">Use the QR or shop code from your print shop above.</p>
                       </div>
-                    </button>
-                  ))}
-                  {nearby.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No shops match your search.</p>
-                  )}
+                    ) : (
+                      filteredNearby.map((s) => (
+                        <button
+                          key={s.shopCode}
+                          onClick={() => setLocation(`/join/${s.shopCode}`)}
+                          className="w-full rounded-xl border p-3 text-left hover:border-blue-500 hover:bg-blue-50/40 transition-colors"
+                          data-testid={`nearby-${s.shopCode}`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground flex items-center gap-1.5">
+                                {s.name}
+                                <span className={`h-1.5 w-1.5 rounded-full ${s.isOpen ? "bg-emerald-500" : "bg-red-400"}`} />
+                              </p>
+                              {s.address && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                                  <MapPin className="h-3 w-3 shrink-0" /> {s.address}
+                                </p>
+                              )}
+                            </div>
+                            <span className="text-xs rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 font-medium shrink-0">
+                              {formatDistance(s.distanceMeters)}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed bg-white p-5 text-center space-y-2">
+                  <div className="mx-auto h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
+                    <LocateFixed className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">Share your location to see nearby shops</p>
+                  <p className="text-xs text-muted-foreground">
+                    We'll only show shops that are physically close to you — no fake or placeholder list.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={requestGeo}
+                    disabled={geo === "prompting"}
+                    className="bg-blue-600 hover:bg-blue-700 mt-1"
+                  >
+                    <LocateFixed className="h-4 w-4 mr-2" />
+                    {geo === "prompting" ? "Locating…" : geo === "denied" ? "Try again" : "Use my location"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
