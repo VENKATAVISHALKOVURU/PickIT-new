@@ -69,10 +69,15 @@ function SiteNav() {
         {/* gradient hairline */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
 
-        <div className="container mx-auto px-4 sm:px-6 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-6 grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-4">
           {/* Brand */}
           <div className="flex items-center">
-            <BrandMark size={scrolled ? 84 : 110} />
+            <span className="hidden sm:flex">
+              <BrandMark size={scrolled ? 84 : 110} />
+            </span>
+            <span className="sm:hidden flex">
+              <BrandMark size={scrolled ? 56 : 72} />
+            </span>
           </div>
 
           {/* Desktop nav */}
@@ -104,14 +109,14 @@ function SiteNav() {
             </Link>
             <Link
               href="/auth/login"
-              className="hidden sm:inline-flex text-[14px] font-medium text-slate-700 hover:text-[#1a1f4d] px-3 py-2 rounded-full hover:bg-slate-100 transition-colors"
+              className="hidden lg:inline-flex text-[14px] font-medium text-slate-700 hover:text-[#1a1f4d] px-3 py-2 rounded-full hover:bg-slate-100 transition-colors"
               data-testid="nav-login"
             >
               Login
             </Link>
             <Button
               asChild
-              className="rounded-full bg-gradient-to-r from-[#1a1f4d] to-[#2b3580] hover:from-[#0f1438] hover:to-[#1a1f4d] text-white px-5 h-10 text-sm font-semibold shadow-[0_10px_30px_-8px_rgba(26,31,77,0.45)] group"
+              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-[#1a1f4d] to-[#2b3580] hover:from-[#0f1438] hover:to-[#1a1f4d] text-white px-5 h-10 text-sm font-semibold shadow-[0_10px_30px_-8px_rgba(26,31,77,0.45)] group"
               data-testid="nav-cta-get-started"
             >
               <Link href="/auth/register">
@@ -123,11 +128,12 @@ function SiteNav() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 text-slate-700"
+              className="lg:hidden inline-flex items-center gap-1.5 h-10 px-3 rounded-full bg-slate-900 hover:bg-[#1a1f4d] text-white shadow-[0_8px_20px_-8px_rgba(15,23,42,0.5)] transition-colors"
               aria-label="Open menu"
               data-testid="nav-mobile-toggle"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4" />
+              <span className="text-[13px] font-semibold">Menu</span>
             </button>
           </div>
         </div>
@@ -151,7 +157,7 @@ function SiteNav() {
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 280, damping: 30 }}
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div className="flex items-center justify-between px-5 py-4 border-b bg-gradient-to-b from-slate-50 to-white">
                 <BrandMark size={64} />
                 <button
                   type="button"
@@ -162,39 +168,107 @@ function SiteNav() {
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <nav className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
+
+              <div className="flex-1 overflow-y-auto">
+                {/* Hero quick actions */}
+                <div className="px-4 pt-4 grid grid-cols-2 gap-2.5">
+                  <Link
+                    href={scanHref}
                     onClick={() => setMobileOpen(false)}
-                    className="px-4 py-3 rounded-xl text-[16px] font-medium text-slate-800 hover:bg-slate-100"
+                    className="group flex flex-col items-start gap-1.5 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200/70 hover:from-emerald-100 hover:to-emerald-200/60 transition-colors"
+                    data-testid="drawer-scan"
                   >
-                    {link.label}
+                    <span className="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center">
+                      <QrCode className="h-4 w-4" />
+                    </span>
+                    <span className="text-[13px] font-semibold text-emerald-900">Scan QR</span>
+                    <span className="text-[10px] text-emerald-700/80">Connect to a shop</span>
+                  </Link>
+                  <Link
+                    href="/auth/register?role=student"
+                    onClick={() => setMobileOpen(false)}
+                    className="group flex flex-col items-start gap-1.5 p-3.5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/60 border border-blue-200/70 hover:from-blue-100 transition-colors"
+                  >
+                    <span className="h-8 w-8 rounded-xl bg-blue-500/10 text-blue-700 flex items-center justify-center">
+                      <GraduationCap className="h-4 w-4" />
+                    </span>
+                    <span className="text-[13px] font-semibold text-blue-900">I'm a Student</span>
+                    <span className="text-[10px] text-blue-700/80">Upload &amp; print</span>
+                  </Link>
+                  <Link
+                    href="/auth/register?role=owner"
+                    onClick={() => setMobileOpen(false)}
+                    className="group flex flex-col items-start gap-1.5 p-3.5 rounded-2xl bg-gradient-to-br from-violet-50 to-violet-100/60 border border-violet-200/70 hover:from-violet-100 transition-colors"
+                  >
+                    <span className="h-8 w-8 rounded-xl bg-violet-500/10 text-violet-700 flex items-center justify-center">
+                      <Store className="h-4 w-4" />
+                    </span>
+                    <span className="text-[13px] font-semibold text-violet-900">I Own a Shop</span>
+                    <span className="text-[10px] text-violet-700/80">Manage queue</span>
+                  </Link>
+                  <a
+                    href="mailto:hello@pickit.app"
+                    onClick={() => setMobileOpen(false)}
+                    className="group flex flex-col items-start gap-1.5 p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200/70 hover:from-amber-100 transition-colors"
+                  >
+                    <span className="h-8 w-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                      <Mail className="h-4 w-4" />
+                    </span>
+                    <span className="text-[13px] font-semibold text-amber-900">Talk to us</span>
+                    <span className="text-[10px] text-amber-700/80">hello@pickit.app</span>
                   </a>
-                ))}
-                <Link
-                  href={scanHref}
-                  onClick={() => setMobileOpen(false)}
-                  className="mt-2 px-4 py-3 rounded-xl text-[16px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 inline-flex items-center gap-2"
-                >
-                  <QrCode className="h-4 w-4" />
-                  Scan QR
-                </Link>
-              </nav>
-              <div className="p-4 border-t flex flex-col gap-2">
+                </div>
+
+                {/* Section nav */}
+                <div className="px-5 mt-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 mb-2">Explore</p>
+                  <nav className="flex flex-col gap-0.5">
+                    {NAV_LINKS.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center justify-between px-3 py-3 rounded-xl text-[15px] font-medium text-slate-800 hover:bg-slate-100 transition-colors"
+                      >
+                        {link.label}
+                        <ArrowRight className="h-4 w-4 text-slate-300" />
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Live status strip */}
+                <div className="mx-4 mt-5 mb-2 flex items-center justify-between rounded-xl border border-emerald-200/70 bg-emerald-50/50 px-3.5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 animate-ping" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    <div className="leading-tight">
+                      <p className="text-[12px] font-semibold text-emerald-900">All shops live</p>
+                      <p className="text-[10px] text-emerald-700/80">Avg pickup in 5 minutes</p>
+                    </div>
+                  </div>
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+
+              <div className="p-4 border-t flex flex-col gap-2 bg-slate-50/60">
                 <Button asChild variant="outline" className="rounded-xl h-11">
                   <Link href="/auth/login" onClick={() => setMobileOpen(false)}>Login</Link>
                 </Button>
                 <Button
                   asChild
-                  className="rounded-xl h-11 bg-gradient-to-r from-[#1a1f4d] to-[#2b3580] text-white"
+                  className="rounded-xl h-11 bg-gradient-to-r from-[#1a1f4d] to-[#2b3580] text-white shadow-[0_10px_25px_-10px_rgba(26,31,77,0.5)]"
                 >
                   <Link href="/auth/register" onClick={() => setMobileOpen(false)}>
                     Get Started
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
                 </Button>
+                <p className="text-center text-[10px] text-slate-400 mt-1">
+                  Trusted across 50+ campuses · INR pricing
+                </p>
               </div>
             </motion.aside>
           </>
