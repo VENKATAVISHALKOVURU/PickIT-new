@@ -1,12 +1,12 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, serial, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const auditLogsTable = sqliteTable("audit_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const auditLogsTable = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id"), // Who did it
   action: text("action").notNull(), // e.g., "USER_REGISTERED", "ORDER_STATUS_CHANGED"
   entityId: integer("entity_id"), // ID of the thing changed
-  details: text("details"), // JSON string of changes
+  details: jsonb("details"), // Native PG JSONB is elite
   ipAddress: text("ip_address"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(strftime('%s', 'now'))`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

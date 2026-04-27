@@ -1,16 +1,16 @@
-import { createClient } from "@libsql/client";
-import path from "path";
-import { fileURLToPath } from "url";
+import { db, usersTable } from "@workspace/db";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbUrl = "file:" + path.resolve(__dirname, "../../database/db/local.db");
-console.log("Connecting to:", dbUrl);
-
-const client = createClient({ url: dbUrl });
-
-try {
-  const rs = await client.execute("SELECT 1");
-  console.log("Success:", rs);
-} catch (err) {
-  console.error("Failure:", err);
+async function test() {
+  console.log("[TEST] Attempting to connect to Supabase...");
+  try {
+    const result = await db.select().from(usersTable).limit(1);
+    console.log("[TEST] Success! Connection established.");
+    console.log("[TEST] Result:", result);
+    process.exit(0);
+  } catch (err) {
+    console.error("[TEST] Failed to connect:", err);
+    process.exit(1);
+  }
 }
+
+test();

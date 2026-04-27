@@ -1,15 +1,15 @@
-import { sqliteTable, integer, real } from "drizzle-orm/sqlite-core";
+import { pgTable, integer, doublePrecision, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { sql } from "drizzle-orm";
 
-export const pricingConfigTable = sqliteTable("pricing_config", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const pricingConfigTable = pgTable("pricing_config", {
+  id: serial("id").primaryKey(),
   shopId: integer("shop_id").notNull().unique(),
-  bwPerPage: real("bw_per_page").notNull().default(2),
-  colorPerPage: real("color_per_page").notNull().default(5),
-  minimumOrder: real("minimum_order").notNull().default(10),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(strftime('%s', 'now'))`),
+  bwPerPage: doublePrecision("bw_per_page").notNull().default(2),
+  colorPerPage: doublePrecision("color_per_page").notNull().default(5),
+  minimumOrder: doublePrecision("minimum_order").notNull().default(10),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertPricingConfigSchema = createInsertSchema(pricingConfigTable).omit({ id: true });

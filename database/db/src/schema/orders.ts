@@ -1,10 +1,10 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, doublePrecision, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { sql } from "drizzle-orm";
 
-export const ordersTable = sqliteTable("orders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const ordersTable = pgTable("orders", {
+  id: serial("id").primaryKey(),
   studentId: integer("student_id").notNull(),
   shopId: integer("shop_id").notNull(),
   fileUrl: text("file_url").notNull(),
@@ -13,9 +13,9 @@ export const ordersTable = sqliteTable("orders", {
   colorMode: text("color_mode").notNull(),
   copies: integer("copies").notNull(),
   status: text("status").notNull().default("pending"),
-  price: real("price").notNull(),
+  price: doublePrecision("price").notNull(),
   note: text("note"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(strftime('%s', 'now'))`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertOrderSchema = createInsertSchema(ordersTable).omit({ id: true, createdAt: true, status: true });

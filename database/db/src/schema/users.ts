@@ -1,16 +1,16 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { sql } from "drizzle-orm";
 
-export const usersTable = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const usersTable = pgTable("users", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull(), // SQLite doesn't support native enums as well as PG, but we can keep it as text
+  role: text("role").notNull(), 
   shopId: integer("shop_id"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(strftime('%s', 'now'))`),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
