@@ -13,6 +13,7 @@
       }
     }
   ],
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
