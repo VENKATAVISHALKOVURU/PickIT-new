@@ -44,6 +44,30 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Security & Private Data
+.env
+.env.*
+*.db
+*.db-journal
+*.sqlite
+/database/db/*.db
+
+# Agent & Vibe Metadata (Cleanup)
+.planning/
+.agents/
+.gemini/
+replit.md
+.replit
+.replitignore
+artifacts/
+attached_assets/
+
+# Replit & Environments
 .cache/
 .local/
+.npmrc
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
